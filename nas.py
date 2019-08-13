@@ -24,7 +24,6 @@ MORE_RESOURCES_STYLE = 'MORE_RESOURCES_STYLE'
 MORE_RESOURCES_LINKS_STYLE = 'MORE_RESOURCES_LINKS_STYLE'
 FONT_TNR = 'Times New Roman'
 LOGO_URL = 'https://www.mindef.gov.sg/web/mindefstatic/themes/Portal8.5/images/logo_mindef.png'
-LOGO_FILENAME = fetch_image(LOGO_URL, 'LOGO')
 
 def init_docx_styles(styles):
     title_style = styles.add_style(TITLE_STYLE, WD_STYLE_TYPE.PARAGRAPH)
@@ -44,11 +43,14 @@ def init_docx_styles(styles):
     body_style.font.name = FONT_TNR
     body_style.font.size = Pt(12)
 
+    
 def cleanup(txt):
     return re.sub(SINGLE_LINE_RE, '', txt)
 
+
 def extract_datetime(dt):
     return re.sub(EXTRACT_DT_RE, '\\1', dt)
+
 
 def parse_pr(url='https://www.mindef.gov.sg/web/portal/mindef/news-and-events/latest-releases/article-detail/2013/january/2013Jan12-News-Releases-02121'):
     try:
@@ -92,6 +94,7 @@ def parse_pr(url='https://www.mindef.gov.sg/web/portal/mindef/news-and-events/la
     
     for ol in others_link:
         parse_pr(ol)
+
         
 def fetch_image(url, idx):
     image_filename = 'img{}.png'.format(idx)
@@ -100,7 +103,8 @@ def fetch_image(url, idx):
     open(image_filename, 'wb').write(image.content)
 
     return image_filename
-        
+
+
 def build_docx(article_type, title, datetime_str, images, captions, body, others_text, others_link):
     dup_prefix = ''
     filename = datetime.strptime(datetime_str, '%d %b %Y')
@@ -109,6 +113,7 @@ def build_docx(article_type, title, datetime_str, images, captions, body, others
     print(filename)
     doc = Document()
     init_docx_styles(doc.styles)
+    LOGO_FILENAME = fetch_image(LOGO_URL, 'LOGO')
     doc.add_picture(LOGO_FILENAME)
     doc.add_paragraph(title, style=TITLE_STYLE)
     doc.add_paragraph(datetime_str, style=DATETIME_STYLE)
@@ -121,10 +126,11 @@ def build_docx(article_type, title, datetime_str, images, captions, body, others
         doc.add_paragraph(captions[0], style=CAPTION_STYLE)
     for para in body:
         doc.add_paragraph(str(para), style=BODY_STYLE)
-    for (var i = 1; i < num_overall; ++i):
+    for i in range(1, num_overall):
         doc.add_picture(images[i])
-        doc.add_picture(captions[i])
+        doc.add_paragraph(captions[i], style=CAPTION_STYLE)
 
     doc.save(filename)
+    
     
 parse_pr(url='https://www.mindef.gov.sg/web/portal/mindef/news-and-events/latest-releases/article-detail/2013/november/2013Nov19-News-Releases-02556')
