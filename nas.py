@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import os
 
 def install(package):
     subprocess.call([sys.executable, "-m", "pip", "install", package])
@@ -23,6 +24,7 @@ import unicodedata
 import sys
 import html as pythonhtml
 
+FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 SINGLE_LINE_RE = re.compile('[\\n\\t\\r]|[ ]{2,}|&nbsp;')
 EXTRACT_DT_RE = re.compile('^.*?(\d{2}[ ][A-Z][a-z]{2}[ ]\d{4}).*$')
 ARTICLE_TYPES_MAP = {
@@ -47,9 +49,25 @@ RUN_TABLE_STYLE = 'RUN_TABLE_STYLE'
 
 FONT_TNR = 'Times New Roman'
 LOGO_URL = 'https://www.mindef.gov.sg/web/mindefstatic/themes/Portal8.5/images/logo_mindef.png'
-VISITED_MAP = dict()
 DEFAULT_IMAGE_WIDTH = Cm(15.24)
 LOGO_FILENAME = ''
+
+def write_error(directory, error='', exception=None):
+    errormsg = '{}_{}\r\n'.format(error, '' if exception is None else str(exception))
+
+    with open(os.path.join(directory, 'error.txt'), 'a') as f:
+        f.write(errormsg)
+
+def write_debug(directory, msg='', exception=None):
+    debugmsg = '{}_{}\r\n'.format(msg, '' if exception is None else str(exception))
+
+    with open(os.path.join(directory, 'debug.txt'), 'a') as f:
+        f.write(debugmsg)
+
+def write_details(directory, title, url):
+    with open(os.path.join(directory, 'details.txt'), 'a') as f:
+        f.write(title + '\r\n')
+        f.write(url + '\r\n')
 
 def docx_add_bold(style):
     style.font.bold = True
@@ -98,7 +116,6 @@ def docx_init_styles(styles):
     
     run_list_number_style = styles.add_style(RUN_LIST_NUMBER_STYLE, WD_STYLE_TYPE.CHARACTER)
     run_list_number_style.base_style = styles[LIST_NUMBER_STYLE]
-    print(dir(styles[LIST_NUMBER_STYLE]), styles[LIST_NUMBER_STYLE].element)
     
     more_resources_title_style = styles.add_style(MORE_RESOURCES_TITLE_STYLE, WD_STYLE_TYPE.PARAGRAPH)
     more_resources_title_style.base_style = styles[BODY_STYLE]
@@ -128,31 +145,50 @@ def parse_extract_datetime(dt):
     return re.sub(EXTRACT_DT_RE, '\\1', dt)
 
 
+def parse_clean_url(url):
+    return re.sub(re.compile('/[?]+$'), '', url)
+
+
 def parse_append_hostname(url):
     return 'https://www.mindef.gov.sg{}'.format(url) if url.startswith('/') else url
 
 
-def parse_filename(dt, article_type_num='001'):
-    filename = datetime.strptime(dt, '%d %b %Y')
+def parse_filename(dt):
+    return datetime.strptime(dt, '%d %b %Y').strftime('%Y%m%d')
 
-    return '{}{}'.format(filename.strftime('%Y%m%d'), article_type_num)
+
+def parse_extract_img_link_caption(images):
+    new_images = []
+
+    for e in images:
+        links = e.xpath('img/@src')
+        link = links[0] if len(links) > 0 else ''
+        link = parse_append_hostname(link)
+
+        captions = e.xpath('span[@class="caption"]/text()')
+        caption = captions[0] if len(captions) > 0 else ''
+        caption = parse_cleanup(caption)
+
+        new_images.append({
+            'link': link,
+            'caption': caption,
+        })
+
+    return new_images
 
         
-def parse_fetch_image(url, idx):
-    image_filename = 'img{}.png'.format(idx)
+def parse_fetch_image(url, idx, filename_prefix, directory):
+    image_filename = os.path.join(directory, '{}_IMG_{}.png'.format(filename_prefix, idx))
     image = requests.get(url)
-    open(image_filename, 'wb').write(image.content)
+    with open(image_filename, 'wb') as f:
+        f.write(image.content)
 
     return image_filename
 
 
-def parse_article(url):
-    global VISITED_MAP
-
-    if url in VISITED_MAP:
-        return 'VISITED'
-    else:
-        VISITED_MAP[url] = True
+def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dict()):
+    if url in visited_map:
+        return visited_map[url]
         
     try:
         page = requests.get(url)
@@ -160,13 +196,15 @@ def parse_article(url):
         print('-------------------------')
         print(url, ex)
         print('-------------------------')
+        write_error(directory, error='Invalid URL: {}'.format(url), exception=ex)
 
-        return
+        return 'ERROR'
         
     tree = html.fromstring(page.content)
     
     titles = tree.xpath('//div[@class="article-detail__heading"]/div[contains(@class, "title")]/text()')
     title = parse_cleanup(titles[0])
+    write_details(directory, url, title)
     
     article_types = tree.xpath('//div[@class="article-detail__heading"]/div[@class="article-info"]/span[contains(@class, "item-label")]/text()')
     article_type = parse_cleanup(article_types[0]).upper()
@@ -174,43 +212,41 @@ def parse_article(url):
     datetime_strs = tree.xpath('//div[@class="article-detail__heading"]/div[@class="article-info"]/span[contains(@class, "item-published")]/text()')
     datetime_str = parse_extract_datetime(datetime_strs[0])
     
-    images = tree.xpath('//article[contains(@class, "mindef-gallery-container")]/div[contains(@class, "mindef-gallery")]//img/@src')
-    images = list(map(parse_append_hostname, images))
-    for idx, img_url in enumerate(images):
-        img_filename = parse_fetch_image(img_url, idx)
-        images[idx] = img_filename
-        
-    captions = tree.xpath('//article[contains(@class, "mindef-gallery-container")]/div[contains(@class, "mindef-gallery")]//span[@class="caption"]/text()')
-    captions = list(map(parse_cleanup, captions))
+    images = tree.xpath('//article[contains(@class, "mindef-gallery-container")]/div[contains(@class, "mindef-gallery")]//div[@class="item"]/figure')
+    images = parse_extract_img_link_caption(images)
     
     body = tree.xpath('//div[@class="row"]//div[@class="article"]')[0]
-    # body = list(filter(lambda v: len(v) > 0, list(map(parse_cleanup, body))))
-#     for idx, b in enumerate(body):
-#         body[idx] = etree.tostring(b, pretty_print=True)
 
     others_text = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/p/a/text()')
     others_text = list(map(parse_cleanup, others_text))
     
     others_link = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/p/a/@href')
+    others_link = list(map(parse_clean_url, others_link))
     others_link = list(map(parse_append_hostname, others_link))
 
+    print('URL', url)
     print('Title', title)
     print('Article Type', article_type, ARTICLE_TYPES_MAP[article_type])
     print('DateTime', datetime_str)
-    
     print('Images', images)
-    
-    print('Captions', captions)
-    
     print('Body', body)
-    
     print('Others Text', others_text)
     print('Others Link', others_link)
+
+    if not filename:
+        filename = parse_filename(datetime_str)
+    print('FILENAME', filename)
+    filename_prefix = 'MINDEF_{}{}{}'.format(filename, ARTICLE_TYPES_MAP[article_type], dup_prefix)
+    save_filename = '{}.docx'.format(filename_prefix)
+    print('SAVE_FILENAME', save_filename)
+    visited_map[url] = save_filename
     
-    docx_build(article_type, title, datetime_str, images, captions, body, others_text, others_link)
+    for i in range(len(others_link)):
+        others_link[i] = parse_article(url=others_link[i], directory=directory, visited_map=visited_map)
     
-    for ol in others_link:
-        parse_article(ol)
+    save_filename = docx_build(save_filename, filename_prefix, directory, title, datetime_str, images, body, others_text, others_link)
+
+    return save_filename
 
 """
 Source: https://github.com/python-openxml/python-docx/issues/384
@@ -525,12 +561,7 @@ def docx_build_body(body, doc=None, paragraph=None, run=None, parent_tag='', par
 """
 https://www.mindef.gov.sg/web/wcm/connect/mindef/mindef-content/home?siteAreaName=&srv=cmpnt&selectedCategories=news-releases&cmpntid=dcb39e68-0637-4383-b587-29be9bb9bea5&source=library&cache=none&contentcache=none&connectorcache=none&wcm_page.MENU-latest-releases=3
 """
-def docx_build(article_type, title, datetime_str, images, captions, body, others_text, others_link):
-    dup_prefix = ''
-    filename = parse_filename(datetime_str, ARTICLE_TYPES_MAP[article_type])
-    print(filename)
-    filename = 'MINDEF_{}{}.docx'.format(filename , dup_prefix)
-    print(filename)
+def docx_build(save_filename, filename_prefix, directory, title, datetime_str, images, body, others_text, others_link):
     doc = Document()
     docx_init_styles(doc.styles)
     
@@ -540,21 +571,28 @@ def docx_build(article_type, title, datetime_str, images, captions, body, others
     
     doc.add_paragraph(datetime_str, style=DATETIME_STYLE)
     
+    for idx, img in enumerate(images):
+        img_filename = parse_fetch_image(img['link'], idx, filename_prefix, directory)
+        images[idx]['link'] = img_filename
     num_images = len(images)
-    num_captions = len(captions)
-    num_overall = num_images if num_images > num_captions else num_captions
     
     if num_images > 0:
-        doc.add_picture(images[0], width=DEFAULT_IMAGE_WIDTH)
-    
-    if num_captions > 0:
-        doc.add_paragraph(captions[0], style=CAPTION_STYLE)
+        try:
+            doc.add_picture(images[0]['link'], width=DEFAULT_IMAGE_WIDTH)
+            doc.add_paragraph(images[0]['caption'], style=CAPTION_STYLE)
+        except docx.image.exceptions.UnrecognizedImageError as ex:
+            write_error(directory, error='Image Error', exception=ex)
+            doc.add_picture(LOGO_FILENAME, width=DEFAULT_IMAGE_WIDTH)
     
     docx_build_body(body, doc)
 
-    for i in range(1, num_overall):
-        doc.add_picture(images[i], width=DEFAULT_IMAGE_WIDTH)
-        doc.add_paragraph(captions[i], style=CAPTION_STYLE)
+    for i in range(1, num_images):
+        try:
+            doc.add_picture(images[i]['link'], width=DEFAULT_IMAGE_WIDTH)
+            doc.add_paragraph(images[i]['caption'], style=CAPTION_STYLE)
+        except docx.image.exceptions.UnrecognizedImageError as ex:
+            write_error(directory, error='Image Error', exception=ex)
+            doc.add_picture(LOGO_FILENAME, width=DEFAULT_IMAGE_WIDTH)
 
     num_texts = len(others_text)
     num_links = len(others_link)
@@ -566,7 +604,10 @@ def docx_build(article_type, title, datetime_str, images, captions, body, others
             other_para = doc.add_paragraph('', style=MORE_RESOURCES_LINK_STYLE)
             docx_add_hyperlink(other_para, others_link[i], others_text[i])
 
-    doc.save(filename)
+    doc.save(os.path.join(directory, save_filename))
+
+    return save_filename
+
 
 def docx_test():
     xxx = html.fromstring('<html><head><title>sadasdas</title></head><body>\
@@ -745,56 +786,84 @@ def get_pages(category, year, long_month, page):
         'connectorcache': 'none',
         'wcm_page.MENU-latest-releases': page,
     }
-    page = requests.get(url, params)
-    if page.content == None or page.content == '':
+    page = requests.get(url, params=params)
+    print('FETCH', page.url)
+    page_content = str(page.content)
+    if page_content is None or len(page_content) < 10:
         return None
 
-    tree = html.fromstring(page.content)
+    tree = html.fromstring(page_content)
     
     links = tree.xpath('//a[@class="news-event-item-link"]/@href')
+    links = list(map(parse_clean_url, links))
     links = list(map(parse_append_hostname, links))
 
     datetimes = tree.xpath('//span[@class="type-body-2"]/text()')
-    print(datetimes[0])
     datetimes = list(map(parse_extract_datetime, datetimes))
-    print(datetimes[0])
     datetimes = list(map(parse_filename, datetimes))
+    
+    num_links = len(links)
+    num_dt = len(datetimes)
+    i = 0
+    pages = []
 
-    return {
-        'links': links,
-        'datetimes': datetimes,
-    }
+    while i < num_links and i < num_dt:
+        pages.append({
+            'link': links[i],
+            'filename': datetimes[i],
+            'category': category,
+            'year': year,
+            'month': long_month,
+        })
+        i += 1
+
+    return pages
 
 def get_month_pages(category, year, long_month):
-    month = {
-        'links': [],
-        'datetimes': [],
-    }
+    directory = os.path.join(FILE_DIR, category, str(year), long_month)
 
-    for page in range(1, 100):
-        pages = get_pages(category, year, long_month, page)
-        if pages == None:
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    month_pages = []
+
+    for page_num in range(1, 100):
+        pages = get_pages(category, year, long_month, page_num)
+        if pages is None:
             break
-        month.links = month.links + pages.links
-        month.datetimes = month.datetimes + pages.datetimes
+        month_pages = month_pages + pages
 
-    return month
+    return month_pages
 
 def get_year_pages(category, year):
-    year = {
-        'links': [],
-        'datetimes': [],
-    }
+    year_pages = []
 
-    for month_str in ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']:
-        month = get_month_pages(category, year, month_str)
-        year.links = year.links + month.links
-        year.datetimes = year.datetimes + month.datetimes
+    for month_str in ['september']:#['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']:
+        month_pages = get_month_pages(category, year, month_str)
+        year_pages = year_pages + month_pages
 
-    return year
+    year_pages.sort(key=lambda y: int(y['filename']))
+    dup_map = dict()
+    for i in range(len(year_pages)):
+        filename = year_pages[i]['filename']
+        dup_map[filename] = dup_map[filename] + 1 if filename in dup_map else 1
+        dup_count = dup_map[filename]
+        year_pages[i]['dup_prefix'] = '' if dup_count == 1 else '_{}'.format(dup_count)
+        if dup_count == 2:
+            year_pages[i-1]['dup_prefix'] = '_1'
+
+    with open(os.path.join(FILE_DIR, category, str(year), 'debug-listofpages.txt'), 'w') as f:
+        f.write('\r\n'.join(list(map(str, year_pages))))
+
+    return year_pages
 
 
-
-# LOGO_FILENAME = parse_fetch_image(LOGO_URL, 'LOGO')
+year_pages = get_year_pages('news-releases', 2013)
+LOGO_FILENAME = parse_fetch_image(url=LOGO_URL, idx='', filename_prefix='LOGO', directory=FILE_DIR)
+for page in year_pages:
+    directory = os.path.join(FILE_DIR, page['category'], str(page['year']), page['month'], page['filename']+page['dup_prefix'])
+    
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    parse_article(url=page['link'], filename=page['filename'], dup_prefix=page['dup_prefix'], directory=directory)
 # parse_article(url='https://www.mindef.gov.sg/web/portal/mindef/news-and-events/latest-releases/article-detail/2019/june/13jun19_nr')
-print(get_year_pages('new-releases', 2013))
