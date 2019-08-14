@@ -23,9 +23,10 @@ import re
 import unicodedata
 import sys
 import html as pythonhtml
+import docxtopdf
 
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
-SINGLE_LINE_RE = re.compile('[\\n\\t\\r]|[ ]{2,}|&nbsp;')
+SINGLE_LINE_RE = re.compile('[\\n\\t\\r]|[ ]{2,}|\xa0$')
 EXTRACT_DT_RE = re.compile('^.*?(\d{2}[ ][A-Z][a-z]{2}[ ]\d{4}).*$')
 ARTICLE_TYPES_MAP = {
     'NEWS RELEASES': '001',
@@ -69,16 +70,28 @@ def write_details(directory, title, url):
         f.write(title + '\r\n')
         f.write(url + '\r\n')
 
+
 def docx_add_bold(style):
     style.font.bold = True
     style.font.cs_bold = True
+
 
 def docx_add_italic(style):
     style.font.italic = True
     style.font.cs_italic = True
 
+
 def docx_add_underline(style):
     style.font.underline = True
+
+
+def docx_add_superscript(style):
+    style.font.superscript = True
+
+
+def docx_add_subscript(style):
+    style.font.subscript = True
+
 
 def docx_init_styles(styles):
     title_style = styles.add_style(TITLE_STYLE, WD_STYLE_TYPE.PARAGRAPH)
@@ -135,8 +148,9 @@ def docx_init_styles(styles):
 
 
 def parse_cleanup(txt, dont_trim=False):
-#     return unicodedata.normalize("NFKD", re.sub(SINGLE_LINE_RE, '', txt)).strip()
+    print('before cleanup', txt+'|')
     clean = pythonhtml.unescape(re.sub(SINGLE_LINE_RE, '', txt))
+    print('after cleanup', clean+'|')
     
     return clean.strip() if not dont_trim else clean
 
@@ -239,14 +253,14 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
     filename_prefix = 'MINDEF_{}{}{}'.format(filename, ARTICLE_TYPES_MAP[article_type], dup_prefix)
     save_filename = '{}.docx'.format(filename_prefix)
     print('SAVE_FILENAME', save_filename)
-    visited_map[url] = save_filename
+    visited_map[url] = re.sub('.docx$', '.pdf', save_filename)
     
     for i in range(len(others_link)):
         others_link[i] = parse_article(url=others_link[i], directory=directory, visited_map=visited_map)
     
     save_filename = docx_build(save_filename, filename_prefix, directory, title, datetime_str, images, body, others_text, others_link)
 
-    return save_filename
+    return re.sub('.docx$', '.pdf', save_filename)
 
 """
 Source: https://github.com/python-openxml/python-docx/issues/384
@@ -495,6 +509,9 @@ def docx_build_body(body, doc=None, paragraph=None, run=None, parent_tag='', par
     for e in body.getchildren():
         tag = e.tag
 
+        if tag not in ['p', 'div', 'span', 'hr', 'br', 'li', 'ol', 'ul', 'b', 'strong', 'em', 'italic', 'i', 'u', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'sub', 'sup']:
+            print('NOT HANDLED TAG', tag)
+
         if tag == 'table':
             docx_build_table(e, doc)
             continue
@@ -538,6 +555,10 @@ def docx_build_body(body, doc=None, paragraph=None, run=None, parent_tag='', par
             docx_add_italic(before_run)
         elif tag == 'u':
             docx_add_underline(before_run)
+        elif tag == 'sub':
+            docx_add_subscript(before_run)
+        elif tag == 'sup':
+            docx_add_superscript(before_run)
         elif tag == 'h1' or tag == 'h2' or tag == 'h3' or tag == 'h4' or tag == 'h5'or tag == 'h6':
             before_run.font.size = Pt(12)
             docx_add_bold(before_run)
@@ -566,6 +587,7 @@ def docx_build(save_filename, filename_prefix, directory, title, datetime_str, i
     docx_init_styles(doc.styles)
     
     doc.add_picture(LOGO_FILENAME, width=DEFAULT_IMAGE_WIDTH)
+    doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.LEFT
     
     doc.add_paragraph(title, style=TITLE_STYLE)
     
@@ -579,6 +601,7 @@ def docx_build(save_filename, filename_prefix, directory, title, datetime_str, i
     if num_images > 0:
         try:
             doc.add_picture(images[0]['link'], width=DEFAULT_IMAGE_WIDTH)
+            doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.LEFT
             doc.add_paragraph(images[0]['caption'], style=CAPTION_STYLE)
         except docx.image.exceptions.UnrecognizedImageError as ex:
             write_error(directory, error='Image Error', exception=ex)
@@ -589,6 +612,7 @@ def docx_build(save_filename, filename_prefix, directory, title, datetime_str, i
     for i in range(1, num_images):
         try:
             doc.add_picture(images[i]['link'], width=DEFAULT_IMAGE_WIDTH)
+            doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.LEFT
             doc.add_paragraph(images[i]['caption'], style=CAPTION_STYLE)
         except docx.image.exceptions.UnrecognizedImageError as ex:
             write_error(directory, error='Image Error', exception=ex)
@@ -604,7 +628,9 @@ def docx_build(save_filename, filename_prefix, directory, title, datetime_str, i
             other_para = doc.add_paragraph('', style=MORE_RESOURCES_LINK_STYLE)
             docx_add_hyperlink(other_para, others_link[i], others_text[i])
 
-    doc.save(os.path.join(directory, save_filename))
+    save_path = os.path.join(directory, save_filename)
+    doc.save(save_path)
+    docxtopdf.convert_to(folder=directory, source=save_path)
 
     return save_filename
 
@@ -838,7 +864,7 @@ def get_month_pages(category, year, long_month):
 def get_year_pages(category, year):
     year_pages = []
 
-    for month_str in ['september']:#['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']:
+    for month_str in ['january']:#, 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']:
         month_pages = get_month_pages(category, year, month_str)
         year_pages = year_pages + month_pages
 
@@ -866,4 +892,5 @@ for page in year_pages:
     if not os.path.exists(directory):
         os.makedirs(directory)
     parse_article(url=page['link'], filename=page['filename'], dup_prefix=page['dup_prefix'], directory=directory)
+# parse_article(url='https://www.mindef.gov.sg/web/portal/mindef/news-and-events/latest-releases/article-detail/2013/september/2013Sep01-News-Releases-01938')
 # parse_article(url='https://www.mindef.gov.sg/web/portal/mindef/news-and-events/latest-releases/article-detail/2019/june/13jun19_nr')
