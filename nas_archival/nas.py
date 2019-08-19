@@ -1,20 +1,17 @@
 import os
 import subprocess
 import sys
+import argparse
 
-from constants import LOGO_URL, FILE_DIR, TABLE_STYLE, RUN_TABLE_STYLE, RUN_BODY_STYLE, DEFAULT_IMAGE_WIDTH
-from docx.enum.table import WD_TABLE_ALIGNMENT
-from docx.shared import Cm, Inches
-from docx_helpers import docx_apply_text_align
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT as WD_ALIGN_PARAGRAPH, WD_BREAK
+import docxtopdf
+from constants import FILE_DIR
 
 sys.path.append(FILE_DIR)
 
-from builddocx_body_table import docx_build_body, copy_run
+from builddocx_body_table import docx_build_body
 from builddocx_main import docx_init_styles
 from globals import GLOBALS
 from listing import get_year_pages
-from parse_helpers import parse_fetch_image
 from parse_main import parse_article
 
 
@@ -165,6 +162,7 @@ def docx_test():
 			<p style="text-align: center;"><em>From You to Me密切留忆</em></p>\
 			<p style="text-align: center;"><em>A Portrait of Mum</em></p>\
 			<p style="text-align: center;"><em>First Impression</em></p>\
+            AFTER TEXT\
 			</td></tr>\
     <tr><td style="text-align: center; width: 417px; border-color : #696969;"><em><strong>Winner:</strong> Mum\'s Last Day at Work – MingEn Seafood</em></td></tr>\
     <tr><td style="width: 650px; border-color : #696969;">\
@@ -183,16 +181,19 @@ def docx_test():
 			</td></tr>\
     </table>\
     </body>')
-    xxxxx = html.fromstring('<body><table><tr><td><p style="text-align: center;"><em>阿興薄餅 Heng\'s Popiah</em></p><p style="text-align: center;"><em>阿興薄餅 Heng\'s Popiah</em></p></td></tr></table></body>')
-    body = xxxxx.xpath('//body')[0]
+    xxxxx = html.fromstring(
+        '<body><table><tr><td><p style="text-align: center;"><em>阿興薄餅 Heng\'s Popiah</em></p><p style="text-align: center;"><em>阿興薄餅 Heng\'s Popiah</em></p></td></tr></table></body>')
+    body = xxxx.xpath('//body')[0]
     doc = Document()
     docx_init_styles(doc.styles)
     docx_build_body(body, doc)
     doc.save('debug/test.docx')
+    docxtopdf.convert_to('debug', 'debug/test.docx')
 
 
 def load_logo():
-    GLOBALS['LOGO_FILENAME'] = parse_fetch_image(url=LOGO_URL, idx='', filename_prefix='LOGO', directory=FILE_DIR)
+    GLOBALS['LOGO_FILENAME'] = os.path.join(FILE_DIR,
+                                            'LOGO.png')  # parse_fetch_image(url=LOGO_URL, idx='', filename_prefix='LOGO', directory=FILE_DIR)
 
 
 def create_debug_dir():
@@ -215,13 +216,34 @@ def listbyyear(category, year):
             os.makedirs(directory)
         parse_article(url=page['link'], filename=page['filename'], dup_prefix=page['dup_prefix'], directory=directory)
 
+def main():
+    parser = argparse.ArgumentParser(prog='NAS Archival', description='Parse URL to NAS .pdf')
+    parser.add_argument('--url', dest='url',
+                        help='url of article REQUIRED 1')
+    parser.add_argument('--year', dest='year', type=int,
+                        help='year of <category> articles REQUIRED 2')
+    parser.add_argument('--category', dest='category',
+                        help='category of articles REQUIRED 2')
+    parser.add_argument('--debug', dest='debug')
+    args = vars(parser.parse_args())
 
-# load_logo()
-# docx_test()
-# listbyyear(category='news-releases', year=2013)
-load_logo()
-debug_directory = create_debug_dir()
-# # parse_article(url='https://www.mindef.gov.sg/web/portal/mindef/news-and-events/latest-releases/article-detail/2013/september/2013Sep01-News-Releases-01938')
-parse_article(
-    url='https://www.mindef.gov.sg/web/portal/mindef/news-and-events/latest-releases/article-detail/2019/june/13jun19_fs',
-    directory=debug_directory)
+    if args['year'] is not None and args['category'] is not None:
+        load_logo()
+        listbyyear(category=args['category'], year=args['year'])
+    elif args['url'] is not None:
+        load_logo()
+        debug_directory = create_debug_dir()
+        parse_article(
+            url=args['url'],
+            directory=debug_directory,
+            debug=True)
+    elif args['debug'] is not None:
+        load_logo()
+        debug_directory = create_debug_dir()
+        docx_test()
+    else:
+        parser.print_help()
+
+
+docxtopdf.setup()
+main()

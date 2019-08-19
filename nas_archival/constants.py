@@ -1,9 +1,10 @@
 import os
 import re
 
-from docx.shared import Cm, Inches
+from docx.shared import Inches
 
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
+print(FILE_DIR)
 SINGLE_LINE_RE = re.compile(r'[\n\t\r]|[ ]{2,}|\xa0')
 EXTRACT_DT_RE = re.compile(r'^.*?(\d{2}[ ][A-Z][a-z]{2}[ ]\d{4}).*$')
 TEXT_ALIGN_IN_STYLE_RE = re.compile(r'text-align[ ]*:[ ]*([a-z]+)', flags=re.IGNORECASE)
@@ -41,10 +42,10 @@ HREF = 'href'
 HEIGHT = 'height'
 WIDTH = 'width'
 STYLE = 'style'
-BOLD_TAGS = ['b', 'strong']
+BOLD_TAGS = ['b', 'strong', 'th']
 ITALIC_TAGS = ['i', 'italic', 'em']
 HANDLED_TAGS = ['p', 'div', 'span', 'hr', 'br', 'li', 'ol', 'ul', 'b', 'strong', 'em', 'italic', 'i', 'u', 'a',
-                'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'sub', 'sup', 'section', 'article']
+                'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'sub', 'sup', 'section', 'article', 'tbody', 'thead', 'th']
 LIST_TAGS = ['ul', 'ol']
 PARAGRAPH_TAGS = ['section', 'p', 'article']
 REQ_NEW_PARA_TAGS = ['ul', 'ol', 'section', 'p', 'article']

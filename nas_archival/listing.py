@@ -72,9 +72,11 @@ def get_month_pages(category, year, long_month):
 def get_year_pages(category, year):
     year_pages = []
 
-    for month_str in [
-        'january']:  # , 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']:
+    for month_str in ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october',
+                      'november', 'december']:
+        print('Retrieving Articles from', month_str, year)
         month_pages = get_month_pages(category, year, month_str)
+        print('Retrieved {} Articles from'.format(len(month_pages)), month_str, year)
         year_pages = year_pages + month_pages
 
     year_pages.sort(key=lambda y: int(y['filename']))

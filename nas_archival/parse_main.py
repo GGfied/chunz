@@ -9,9 +9,11 @@ from parse_helpers import parse_append_hostname, parse_clean_url, parse_cleanup,
 from writers import write_details, write_error
 
 
-def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dict()):
+def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dict(), dup_filename_map=dict(), debug=False):
     if url in visited_map:
         return visited_map[url]
+
+    print('Processing: {}, {}'.format(filename, url))
 
     try:
         page = requests.get(url)
@@ -50,25 +52,33 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
     others_link = list(map(parse_clean_url, others_link))
     others_link = list(map(parse_append_hostname, others_link))
 
-    print('URL', url)
-    print('Title', title)
-    print('Article Type', article_type, ARTICLE_TYPES_MAP[article_type])
-    print('DateTime', datetime_str)
-    print('Images', images)
-    print('Body', body)
-    print('Others Text', others_text)
-    print('Others Link', others_link)
+    # print('URL', url)
+    # print('Title', title)
+    # print('Article Type', article_type, ARTICLE_TYPES_MAP[article_type])
+    # print('DateTime', datetime_str)
+    # print('Images', images)
+    # print('Body', body)
+    # print('Others Text', others_text)
+    # print('Others Link', others_link)
 
     if not filename:
         filename = parse_filename(datetime_str)
-    print('FILENAME', filename)
+    # print('FILENAME', filename)
     filename_prefix = 'MINDEF_{}{}{}'.format(filename, ARTICLE_TYPES_MAP[article_type], dup_prefix)
+    if filename_prefix in dup_filename_map:
+        dup_filename_prefix = dup_filename_map[filename_prefix]
+        dup_filename_map[filename_prefix] += 1
+        filename_prefix = '{}_{}'.format(filename_prefix, dup_filename_prefix)
+    else:
+        dup_filename_map[filename_prefix] = 1
+
     save_filename = '{}.docx'.format(filename_prefix)
-    print('SAVE_FILENAME', save_filename)
+    # print('SAVE_FILENAME', save_filename)
     visited_map[url] = re.sub('.docx$', '.pdf', save_filename)
 
-    for i in range(len(others_link)):
-        others_link[i] = parse_article(url=others_link[i], directory=directory, visited_map=visited_map)
+    if not debug:
+        for i in range(len(others_link)):
+            others_link[i] = parse_article(url=others_link[i], directory=directory, visited_map=visited_map, dup_prefix=dup_prefix, dup_filename_map=dup_filename_map)
 
     save_filename = docx_build(save_filename, filename_prefix, directory, title, datetime_str, images, body,
                                others_text, others_link)

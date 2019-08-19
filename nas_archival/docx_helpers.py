@@ -53,11 +53,8 @@ def docx_apply_text_align(para, htmlattrib):
     whichalign = 'left'
 
     if STYLE in htmlattrib:
-        print(htmlattrib[STYLE])
         res = re.search(TEXT_ALIGN_IN_STYLE_RE, htmlattrib[STYLE])
         whichalign = res.group(1).lower() if res else whichalign
-
-    print(htmlattrib.keys(), whichalign)
 
     if whichalign == 'right':
         para.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.RIGHT
@@ -67,6 +64,19 @@ def docx_apply_text_align(para, htmlattrib):
         para.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
     else:
         para.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+
+
+def docx_have_hyperlink(paragraph):
+    for p in paragraph._p:
+        if p.tag.endswith('}hyperlink'):
+            return True
+
+    return False
+
+
+def docx_cleanup_empty_parent_para(paragraph):
+    if paragraph is not None and paragraph.text == '' and not docx_have_hyperlink(paragraph):
+        docx_delete_paragraph(paragraph)
 
 
 """
@@ -94,7 +104,6 @@ def docx_add_hyperlink(paragraph, url, text, old_run=None):
     docx_apply_hyperlink_style(new_run.style)
 
     hyperlink.append(new_run._r)
-
     paragraph._p.append(hyperlink)
 
     return new_run
@@ -129,8 +138,17 @@ def get_width_in_style(style):
 
 def docx_get_coldimensions(tablebody):
     tablerows = tablebody.getchildren()
+    is_first_element_thead = len(tablerows) > 0 and tablerows[0].tag.lower() == 'thead'
     is_first_element_tbody = len(tablerows) > 0 and tablerows[0].tag.lower() == 'tbody'
-    tablerows = tablerows[0].getchildren() if is_first_element_tbody else tablerows
+
+    if is_first_element_thead:
+        temp_tablerows = tablerows[0].getchildren()
+        is_second_element_tbody = len(tablerows) > 1 and tablerows[1].tag.lower() == 'tbody'
+        if is_second_element_tbody:
+            temp_tablerows.extend(tablerows[1].getchildren())
+        tablerows = temp_tablerows
+    elif is_first_element_tbody:
+        tablerows = tablerows[0].getchildren()
     coldimens = []
 
     for rowidx, row in enumerate(tablerows):
@@ -143,11 +161,10 @@ def docx_get_coldimensions(tablebody):
 
         for colidx, col in enumerate(row.getchildren()):
             dimenrowidx = rowidx
-            if col.tag.lower() != 'td':
+            if col.tag.lower() != 'td' and col.tag.lower() != 'th':
                 continue
 
-            while dimencolidx in coldimens[dimenrowidx]:
-                print('Add', dimencolidx)
+            while dimencolidx < len(coldimens[dimenrowidx]) and coldimens[dimenrowidx][dimencolidx] is not '':
                 dimencolidx += 1
 
             colspan = 1
@@ -184,7 +201,8 @@ def docx_get_coldimensions(tablebody):
             if height == -1 and STYLE in col.attrib:
                 height = get_height_in_style(col.attrib[STYLE])
 
-            cellid = ''.join(random.choice(string.ascii_lowercase) for i in range(1000))
+            cellid = ''.join(random.choice(string.ascii_lowercase) for i in range(100))
+
             for r in range(rowspan):
                 for c in range(colspan):
                     dimens = {
@@ -196,10 +214,11 @@ def docx_get_coldimensions(tablebody):
 
                     if dimenrowidx >= len(coldimens):
                         coldimens.append([])
-                    if dimencolidx not in coldimens[dimenrowidx]:
-                        coldimens[dimenrowidx].append(dimens)
-                    else:
-                        coldimens[dimenrowidx][dimencolidx] = dimens
+
+                    while dimencolidx > len(coldimens[dimenrowidx]) - 1:
+                        coldimens[dimenrowidx].append('')
+
+                    coldimens[dimenrowidx][dimencolidx] = dimens
 
                     if r == rowspan - 1:
                         dimencolidx += 1
@@ -222,11 +241,11 @@ def docx_build_table_rows_cols(docx, coldimens):
             cellid = dimens['cellid']
 
             if cellid not in cellid_map:
-                docxtable.cell(rowidx, colidx).height = 1#dimens['height']  if dimens['height'] != -1 else default_height
-                docxtable.cell(rowidx, colidx).width = 1#dimens['width'] if dimens['width'] != -1 else default_width
+                docxtable.cell(rowidx, colidx).height = dimens['height'] if dimens['height'] != -1 else default_height
+                docxtable.cell(rowidx, colidx).width = dimens['width'] if dimens['width'] != -1 else default_width
                 cellid_map[cellid] = docxtable.cell(rowidx, colidx)
             else:
-                docxtable.cell(rowidx, colidx).merge(cellid_map[cellid])
+                cellid_map[cellid] = docxtable.cell(rowidx, colidx).merge(cellid_map[cellid])
 
     return docxtable
 

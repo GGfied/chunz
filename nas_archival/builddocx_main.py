@@ -1,11 +1,12 @@
 import docx
+import docxtopdf
 from builddocx_body_table import docx_build_body
 from constants import *
 from docx import Document
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT as WD_ALIGN_PARAGRAPH, WD_BREAK
 from docx.shared import Pt
-from docx_helpers import docx_add_bold, docx_add_hyperlink, docx_add_underline, docx_apply_hyperlink_style, \
+from docx_helpers import docx_add_bold, docx_add_underline, docx_apply_hyperlink_style, \
     docx_add_italic
 from globals import GLOBALS
 from parse_helpers import parse_fetch_image
@@ -81,6 +82,7 @@ https://www.mindef.gov.sg/web/wcm/connect/mindef/mindef-content/home?siteAreaNam
 
 
 def docx_build(save_filename, filename_prefix, directory, title, datetime_str, images, body, others_text, others_link):
+    print('Building DOCX: {}, {}'.format(save_filename, title))
     doc = Document()
     docx_init_styles(doc.styles)
 
@@ -118,18 +120,20 @@ def docx_build(save_filename, filename_prefix, directory, title, datetime_str, i
             write_error(directory, error='Image Error', exception=ex)
             doc.add_picture(GLOBALS['LOGO_FILENAME'], width=DEFAULT_IMAGE_WIDTH)
 
-    num_texts = len(others_text)
-    num_links = len(others_link)
-    num_overall = num_texts if num_texts > num_links else num_links
-
-    if num_overall > 0:
-        doc.add_paragraph(MORE_RESOURCES_TITLE, style=MORE_RESOURCES_TITLE_STYLE)
-        for i in range(num_overall):
-            other_para = doc.add_paragraph('', style=MORE_RESOURCES_LINK_STYLE)
-            docx_add_hyperlink(other_para, others_link[i], others_text[i])
+    # num_texts = len(others_text)
+    # num_links = len(others_link)
+    # num_overall = num_texts if num_texts > num_links else num_links
+    #
+    # if num_overall > 0:
+    #     doc.add_paragraph(MORE_RESOURCES_TITLE, style=MORE_RESOURCES_TITLE_STYLE)
+    #     for i in range(num_overall):
+    #         other_para = doc.add_paragraph('', style=MORE_RESOURCES_LINK_STYLE)
+    #         docx_add_hyperlink(other_para, others_link[i], others_text[i])
 
     save_path = os.path.join(directory, save_filename)
+    print('Saving to DOCX: {}'.format(save_path))
     doc.save(save_path)
-    # docxtopdf.convert_to(folder=directory, source=save_path)
+    print('Saving to PDF: {}, {}'.format(directory, save_path))
+    docxtopdf.convert_to(folder=directory, source=save_path)
 
     return save_filename

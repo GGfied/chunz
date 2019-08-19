@@ -8,7 +8,7 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_BREAK
 from docx_helpers import docx_add_bold, docx_add_hyperlink, docx_add_italic, docx_add_subscript, docx_add_superscript, \
     docx_add_underline, is_heading_tag, docx_build_table_rows_cols, docx_delete_paragraph, \
-    docx_add_heading, docx_get_coldimensions, docx_apply_text_align, docx_add_listitem
+    docx_add_heading, docx_get_coldimensions, docx_apply_text_align, docx_add_listitem, docx_cleanup_empty_parent_para
 from parse_helpers import parse_cleanup
 
 
@@ -26,7 +26,7 @@ def docx_build_table_cells(coldimens, docxtable):
             tablecol = dimens['col']
             docxcell = docxtable.cell(rowidx, colidx)
             docx_delete_paragraph(docxcell.paragraphs[0])
-            print('TABLE - NEW PARA')
+            # print('TABLE - NEW PARA')
             para_to_use = docxcell.add_paragraph('', style=TABLE_STYLE)
             docx_apply_text_align(para_to_use, tablecol.attrib)
             tablecol_text = tablecol.text
@@ -40,7 +40,7 @@ def docx_build_table_cells(coldimens, docxtable):
 
 
 def docx_build_table(tablebody, doc):
-    print('Build Table')
+    # print('Build Table')
     coldimens = docx_get_coldimensions(tablebody)
     docxtable = docx_build_table_rows_cols(doc, coldimens)
     docxtable.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -100,51 +100,54 @@ def docx_build_body(body, doc=None, paragraph=None, run=None, parent_para_style=
 
         para_to_use = paragraph
         if para_to_use is None:
-            print('NEW PARA', e, e.attrib)
+            # print('NEW PARA', e, e.attrib)
             para_to_use = doc.add_paragraph('', style=parent_para_style)
             docx_apply_text_align(para_to_use, e.attrib)
 
-        if tag == 'p' and e.text == '&nbsp;':
+        if tag == 'p' and e.text == '\xa0':
             e.text = ' '
 
         before_text = parse_cleanup(e.text if e.text is not None else '', dont_trim=True)
         after_text = parse_cleanup(e.tail if e.tail is not None else '', dont_trim=True)
         before_run = run
         run_style = parent_run_style
-        print('INFO', tag, '|' + before_text, '|' + after_text,
-              para_to_use.paragraph_format.alignment,
-              before_run, run_style)
+        # print('INFO', tag, '|' + before_text, '|' + after_text,
+        #       para_to_use.paragraph_format.alignment)
 
         # Start of any element
         if tag == 'a' and HREF in e.attrib and e.attrib[HREF] is not None and e.attrib[HREF] != '':
             url = e.attrib[HREF]
             before_run = docx_add_hyperlink(para_to_use, url, before_text, old_run=before_run)
         elif tag == 'li' and run_style == RUN_LIST_BULLET_STYLE:
-            print('LI BULLET TAG - NEW PARA & RUN')
+            # print('LI BULLET TAG - NEW PARA & RUN')
             if paragraph is None:
                 para_to_use = doc.add_paragraph('', style=LIST_BULLET_STYLE)
                 docx_apply_text_align(para_to_use, e.attrib)
             else:
                 para_to_use = copy_paragraph(doc, paragraph, para_style=LIST_BULLET_STYLE)
+                docx_cleanup_empty_parent_para(paragraph)
             docx_add_listitem(para_to_use, LIST_TYPE_UNORDERED)
             before_run = para_to_use.add_run('', style=run_style)
         elif tag == 'li' and run_style == RUN_LIST_NUMBER_STYLE:
-            print('LI NUMBER TAG - NEW PARA & RUN')
+            # print('LI NUMBER TAG - NEW PARA & RUN')
             if paragraph is None:
                 para_to_use = doc.add_paragraph('', style=LIST_NUMBER_STYLE)
                 docx_apply_text_align(para_to_use, e.attrib)
             else:
                 para_to_use = copy_paragraph(doc, paragraph, para_style=LIST_NUMBER_STYLE)
+                docx_cleanup_empty_parent_para(paragraph)
             docx_add_listitem(para_to_use, LIST_TYPE_ORDERED)
             before_run = para_to_use.add_run('', style=run_style)
-        elif tag in PARAGRAPH_TAGS: # paragraph is not None and
+        elif tag in PARAGRAPH_TAGS:
+            # print('PARA TAG - NEW RUN')
             para_to_use = copy_paragraph(doc, paragraph, para_style=parent_para_style)
+            docx_cleanup_empty_parent_para(paragraph)
             paragraph = para_to_use
             docx_apply_text_align(para_to_use, e.attrib)
             before_run = copy_run(para_to_use, run)
             before_run = para_to_use.add_run('', style=run_style) if before_run is None else before_run
         elif before_run is None:
-            print('NEW RUN')
+            # print('NEW RUN')
             if tag == 'ul':
                 run_style = RUN_LIST_BULLET_STYLE
             elif tag == 'ol':
@@ -153,9 +156,9 @@ def docx_build_body(body, doc=None, paragraph=None, run=None, parent_para_style=
         else:
             before_run = copy_run(para_to_use, run)
             before_run.text = ''
-            print('COPY RUN',
-                  before_run.font.bold,
-                  before_run.font.italic)
+            # print('COPY RUN',
+            #       before_run.font.bold,
+            #       before_run.font.italic)
 
         # Insert Text or Break
         if tag == 'br':
@@ -182,17 +185,11 @@ def docx_build_body(body, doc=None, paragraph=None, run=None, parent_para_style=
         # Insert Text After Element
         if after_text is not '' and tag not in REQ_NEW_PARA_TAGS:
             if run is None:
-                print('AFTER - NEW RUN')
+                # print('AFTER - NEW RUN')
                 para_to_use.add_run(after_text, style=parent_run_style)
             else:
-                print('AFTER - COPY RUN')
+                # print('AFTER - COPY RUN')
                 copy_run(para_to_use, run, text=after_text)
-
-            # if run is None:
-            #     para_to_use.add_run(after_text, style=parent_run_style)
-            # else:
-            #     rbt = before_run.text
-            #     before_run.text = '{}{}'.format(rbt if rbt is not None else '', after_text)
 
         # LIST TAG - Delete Paragraph if no text and only 1 run (this run)
         if tag in LIST_TAGS and before_run.text is '' and len(para_to_use.runs) == 1:
@@ -212,13 +209,8 @@ def docx_build_body(body, doc=None, paragraph=None, run=None, parent_para_style=
         is_next_tag_req_new_para = is_not_last_child and next_tag not in REQ_NEW_PARA_TAGS
 
         if (after_text is not '' or is_next_tag_req_new_para) and tag in REQ_NEW_PARA_TAGS:
-            print('AFTER CHILDREN - COPY PARA & RUN')
+            # print('AFTER CHILDREN - COPY PARA & RUN')
             paragraph = copy_paragraph(doc, paragraph, para_style=parent_para_style)
             run = copy_run(paragraph, run, text=after_text, run_style=parent_run_style)
-
-    # Cleanup empty first paragraph
-    if paragraph is not None:
-        if paragraph.text == '':
-            docx_delete_paragraph(paragraph)
 
     return []
