@@ -1,0 +1,8 @@
+Invalid URL: javascript:;_No connection adapters were found for 'javascript:;'
+Invalid URL: _Invalid URL '': No schema supplied. Perhaps you meant http://?
+Invalid URL: _Invalid URL '': No schema supplied. Perhaps you meant http://?
+Invalid URL: _Invalid URL '': No schema supplied. Perhaps you meant http://?
+Invalid URL: _Invalid URL '': No schema supplied. Perhaps you meant http://?
+Invalid URL: _Invalid URL '': No schema supplied. Perhaps you meant http://?
+Invalid URL: _Invalid URL '': No schema supplied. Perhaps you meant http://?
+Invalid URL: _Invalid URL '': No schema supplied. Perhaps you meant http://?

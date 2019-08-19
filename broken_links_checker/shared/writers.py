@@ -1,6 +1,6 @@
 import os
 
-from constants import FILE_DIR
+from shared.constants import FILE_DIR
 
 
 def write_error(directory=FILE_DIR, error='', exception=None):

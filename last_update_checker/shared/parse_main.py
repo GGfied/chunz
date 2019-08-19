@@ -1,12 +1,12 @@
 import re
 
 import requests
-from builddocx_main import docx_build
-from constants import ARTICLE_TYPES_MAP
+from shared.builddocx_main import docx_build
+from shared.constants import ARTICLE_TYPES_MAP
 from lxml import html
-from parse_helpers import parse_append_hostname, parse_clean_url, parse_cleanup, parse_extract_img_link_caption, \
+from shared.parse_helpers import parse_append_hostname, parse_clean_url, parse_cleanup, parse_extract_img_link_caption, \
     parse_filename, parse_extract_datetime
-from writers import write_details, write_error
+from shared.writers import write_details, write_error
 
 
 def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dict(), dup_filename_map=dict(), debug=False):

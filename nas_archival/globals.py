@@ -1,3 +1,0 @@
-GLOBALS = {
-    'LOGO_FILENAME': '',
-}

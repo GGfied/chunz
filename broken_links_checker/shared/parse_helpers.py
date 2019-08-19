@@ -4,17 +4,17 @@ import re
 from datetime import datetime
 
 import requests
-from constants import SINGLE_LINE_RE, EXTRACT_DT_RE
-
-
-def parse_cleanup(txt, dont_trim=False):
-    clean = html.unescape(re.sub(SINGLE_LINE_RE, '', txt))
-
-    return clean.strip() if not dont_trim else clean
-
-
-def parse_extract_datetime(dt):
-    return re.sub(EXTRACT_DT_RE, '\\1', dt)
+# from shared.constants import SINGLE_LINE_RE, EXTRACT_DT_RE
+#
+#
+# def parse_cleanup(txt, dont_trim=False):
+#     clean = html.unescape(re.sub(SINGLE_LINE_RE, '', txt))
+#
+#     return clean.strip() if not dont_trim else clean
+#
+#
+# def parse_extract_datetime(dt):
+#     return re.sub(EXTRACT_DT_RE, '\\1', dt)
 
 
 def parse_clean_url(url):

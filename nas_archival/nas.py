@@ -3,16 +3,16 @@ import subprocess
 import sys
 import argparse
 
-import docxtopdf
-from constants import FILE_DIR
+from shared import docxtopdf
+from shared.constants import FILE_DIR, URL_PARAM_CATEGORY
 
 sys.path.append(FILE_DIR)
 
-from builddocx_body_table import docx_build_body
-from builddocx_main import docx_init_styles
-from globals import GLOBALS
-from listing import get_year_pages
-from parse_main import parse_article
+from shared.builddocx_body_table import docx_build_body
+from shared.builddocx_main import docx_init_styles
+from shared.globals import GLOBALS
+from shared.listing import get_year_pages
+from shared.parse_main import parse_article
 
 
 def install(package):
@@ -222,7 +222,7 @@ def main():
                         help='url of article REQUIRED 1')
     parser.add_argument('--year', dest='year', type=int,
                         help='year of <category> articles REQUIRED 2')
-    parser.add_argument('--category', dest='category',
+    parser.add_argument('--category', dest='category', type=int, choices=URL_PARAM_CATEGORY,
                         help='category of articles REQUIRED 2')
     parser.add_argument('--debug', dest='debug')
     args = vars(parser.parse_args())
