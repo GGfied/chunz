@@ -1,7 +1,19 @@
+import multiprocessing as mp
 import os
 import subprocess
 import sys
 import argparse
+import time
+
+
+def install(package):
+    subprocess.call([sys.executable, "-m", "pip", "install", package])
+
+
+if __name__ == '__main__':
+    install('lxml')
+    install('python-docx')
+    install('requests')
 
 from shared import docxtopdf
 from shared.constants import FILE_DIR, URL_PARAM_CATEGORY
@@ -13,16 +25,6 @@ from shared.builddocx_main import docx_init_styles
 from shared.globals import GLOBALS
 from shared.listing import get_year_pages
 from shared.parse_main import parse_article
-
-
-def install(package):
-    subprocess.call([sys.executable, "-m", "pip", "install", package])
-
-
-if __name__ == '__main__':
-    install('lxml')
-    install('python-docx')
-    install('requests')
 
 from docx import Document
 from lxml import html
@@ -205,16 +207,42 @@ def create_debug_dir():
     return directory
 
 
+def parse_page(page):
+    directory = os.path.join(FILE_DIR, page['category'], str(page['year']), page['month'],
+                             page['filename'] + page['dup_prefix'])
+
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    try:
+        os.remove(os.path.join(directory, 'debug.txt'))
+    except FileNotFoundError:
+        pass
+    try:
+        os.remove(os.path.join(directory, 'details.txt'))
+    except FileNotFoundError:
+        pass
+    try:
+        os.remove(os.path.join(directory, 'error.txt'))
+    except FileNotFoundError:
+        pass
+    parse_article(url=page['link'], filename=page['filename'], dup_prefix=page['dup_prefix'],
+                  directory=directory)
+
+
+def init_shared(args):
+    GLOBALS['SAVE_PDF_COUNTER'] = args
+
 def listbyyear(category, year):
     load_logo()
     year_pages = get_year_pages(category, year)
-    for page in year_pages:
-        directory = os.path.join(FILE_DIR, page['category'], str(page['year']), page['month'],
-                                 page['filename'] + page['dup_prefix'])
+    mp_lock = mp.Value('i', 0)
 
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        parse_article(url=page['link'], filename=page['filename'], dup_prefix=page['dup_prefix'], directory=directory)
+    with mp.Pool(processes=4, initializer=init_shared, initargs=(mp_lock,)) as p:
+        res = [p.apply_async(parse_page, args=(page,)) for page in year_pages]
+        p.close()
+        p.join()
+        res = [r.get() for r in res]
+
 
 def main():
     parser = argparse.ArgumentParser(prog='NAS Archival', description='Parse URL to NAS .pdf')
@@ -222,7 +250,7 @@ def main():
                         help='url of article REQUIRED 1')
     parser.add_argument('--year', dest='year', type=int,
                         help='year of <category> articles REQUIRED 2')
-    parser.add_argument('--category', dest='category', type=int, choices=URL_PARAM_CATEGORY,
+    parser.add_argument('--category', dest='category', choices=URL_PARAM_CATEGORY,
                         help='category of articles REQUIRED 2')
     parser.add_argument('--debug', dest='debug')
     args = vars(parser.parse_args())
@@ -245,5 +273,9 @@ def main():
         parser.print_help()
 
 
-docxtopdf.setup()
-main()
+if __name__ == '__main__':
+    start = time.time()
+    docxtopdf.setup()
+    main()
+    end = time.time()
+    print('Processing Time Taken: {}secs'.format(end - start))
