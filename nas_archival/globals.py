@@ -1,0 +1,3 @@
+GLOBALS = {
+    'LOGO_FILENAME': '',
+}

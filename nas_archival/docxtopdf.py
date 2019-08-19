@@ -1,9 +1,8 @@
 """
 Source: https://gist.github.com/MichalZalecki/92fd007699004ae7d806274d3a0d5476
 """
-import sys
 import subprocess
-import re
+import sys
 
 
 def convert_to(folder, source, timeout=None):
