@@ -1,0 +1,6 @@
+from shared.constants import GLOBAL_SAVE_PDF_COUNTER, GLOBAL_LOGO_FILENAME
+
+GLOBALS = {
+    GLOBAL_LOGO_FILENAME: '',
+    GLOBAL_SAVE_PDF_COUNTER: None,
+}

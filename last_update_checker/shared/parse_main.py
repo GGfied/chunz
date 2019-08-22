@@ -1,7 +1,7 @@
 import re
 
 import requests
-from shared.builddocx_main import docx_build
+from shared.docx_main import docx_build
 from shared.constants import ARTICLE_TYPES_MAP
 from lxml import html
 from shared.parse_helpers import parse_append_hostname, parse_clean_url, parse_cleanup, parse_extract_img_link_caption, \

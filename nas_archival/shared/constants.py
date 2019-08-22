@@ -1,0 +1,135 @@
+import os
+import re
+
+from docx.shared import Inches
+
+FILE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+print(FILE_DIR)
+NBSP = '\xa0'
+SINGLE_LINE_RE = re.compile('[\n\t\r]|[ ]{2,}|' + NBSP)
+EXTRACT_DT_RE = re.compile(r'^.*?(\d{2}[ ][A-Z][a-z]{2}[ ]\d{4}).*$')
+TEXT_ALIGN_IN_STYLE_RE = re.compile(r'text-align[ ]*:[ ]*([a-z]+)', flags=re.IGNORECASE)
+HEIGHT_IN_STYLE_RE = re.compile(r'height[ ]*:[ ]*(\d+)', flags=re.IGNORECASE)
+WIDTH_IN_STYLE_RE = re.compile(r'width[ ]*:[ ]*(\d+)', flags=re.IGNORECASE)
+
+NEWS_RELEASES_TYPE = 'NEWS RELEASES'
+NEWS_RELEASES_PREFIX = '001'
+SPEECHES_TYPE = 'SPEECHES'
+SPEECHES_PREFIX = '002'
+OTHERS_TYPE = 'OTHERS'
+OTHERS_PREFIX = '003'
+
+ARTICLE_TYPES_MAP = {
+    NEWS_RELEASES_TYPE: NEWS_RELEASES_PREFIX,
+    SPEECHES_TYPE: SPEECHES_PREFIX,
+    OTHERS_TYPE: OTHERS_PREFIX,
+    'REPLIES TO MEDIA QUERY': '002',
+    'MISSING': '003',
+}
+
+URL_PARAM_CATEGORY = ['news-releases', 'speeches', 'others', 'replies-to-media-query']
+
+TITLE_STYLE = 'TITLE_STYLE'
+DATETIME_STYLE = 'DATETIME_STYLE'
+CAPTION_STYLE = 'CAPTION_STYLE'
+RUN_CAPTION_STYLE = 'RUN_CAPTION_STYLE'
+BODY_STYLE = 'BODY_STYLE'
+RUN_BODY_STYLE = 'RUN_BODY_STYLE'
+MORE_RESOURCES_TITLE_STYLE = 'MORE_RESOURCES_TITLE_STYLE'
+MORE_RESOURCES_LINK_STYLE = 'MORE_RESOURCES_LINK_STYLE'
+LIST_BULLET_STYLE = 'LIST_BULLET_STYLE'
+RUN_LIST_BULLET_STYLE = 'RUN_LIST_BULLET_STYLE'
+LIST_NUMBER_STYLE = 'LIST_NUMBER_STYLE'
+RUN_LIST_NUMBER_STYLE = 'RUN_LIST_NUMBER_STYLE'
+TABLE_STYLE = 'TABLE_STYLE'
+RUN_TABLE_STYLE = 'RUN_TABLE_STYLE'
+RUN_LINK_STYLE = 'RUN_LINK_STYLE'
+
+MORE_RESOURCES_TITLE = 'More Resources:'
+NEWS_RELEASE_TITLE = 'News Release:'
+NEWS_RELEASES_TITLE = 'News Releases:'
+FACT_SHEET_TITLE = 'Fact Sheets:'
+FACT_SHEETS_TITLE = 'Fact Sheet:'
+SPEECH_TITLE = 'Speech:'
+SPEECHES_TITLE = 'Speeches:'
+
+FONT_TNR = 'Times New Roman'
+GLOBAL_LOGO_FILENAME = 'LOGO_FILENAME'
+GLOBAL_SAVE_PDF_COUNTER = 'SAVE_PDF_COUNTER'
+GLOBAL_LOGO_PATH = os.path.join(FILE_DIR, 'LOGO.png')
+DEFAULT_IMAGE_WIDTH = Inches(5.74)
+
+COLSPAN_ATTRIB = 'colspan'
+ROWSPAN_ATTRIB = 'rowspan'
+HREF_ATTRIB = 'href'
+HEIGHT_ATTRIB = 'height'
+WIDTH_ATTRIB = 'width'
+SRC_ATTRIB = 'src'
+
+A_TAG = 'a'
+LI_TAG = 'li'
+OL_TAG = 'ol'
+UL_TAG = 'ul'
+ARTICLE_TAG = 'a'
+P_TAG = 'p'
+DIV_TAG = 'div'
+SECTION_TAG = 'section'
+TABLE_TAG = 'table'
+TR_TAG = 'tr'
+TD_TAG = 'td'
+TH_TAG = 'th'
+THEAD_TAG = 'thead'
+TBODY_TAG = 'tbody'
+STYLE_TAG = 'style'
+B_TAG = 'b'
+STRONG_TAG = 'strong'
+U_TAG = 'u'
+SUB_TAG = 'sub'
+SUP_TAG = 'sup'
+BR_TAG = 'br'
+HR_TAG = 'hr'
+SPAN_TAG = 'span'
+IMG_TAG = 'img'
+
+BOLD_TAGS = [B_TAG, STRONG_TAG, TH_TAG]
+ITALIC_TAGS = ['i', 'italic', 'em']
+LIST_TAGS = [OL_TAG, UL_TAG]
+HEADING_TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']
+PARAGRAPH_TAGS = [SECTION_TAG, P_TAG, ARTICLE_TAG]
+HANDLED_TAGS = [DIV_TAG, SPAN_TAG, HR_TAG, BR_TAG, LI_TAG, U_TAG,
+                A_TAG, TABLE_TAG, SUB_TAG, SUP_TAG,
+                TBODY_TAG, THEAD_TAG, TR_TAG, TD_TAG, IMG_TAG]
+HANDLED_TAGS = HANDLED_TAGS + BOLD_TAGS + ITALIC_TAGS + LIST_TAGS + HEADING_TAGS + PARAGRAPH_TAGS
+REQ_NEW_PARA_TAGS = LIST_TAGS + PARAGRAPH_TAGS
+INLINE_TAGS = [SPAN_TAG, SUB_TAG, SUP_TAG, U_TAG, A_TAG, BR_TAG, B_TAG, STRONG_TAG]
+INLINE_TAGS = INLINE_TAGS + ITALIC_TAGS
+
+LIST_TYPE_ORDERED = '5'
+LIST_TYPE_UNORDERED = '1'
+
+DEFAULT_CAPTION_PADDING = ''
+
+PARSE_IMAGE_LINK = 'link'
+PARSE_IMAGE_CAPTION = 'caption'
+
+INLINE_IMAGE_IDX = 'idx'
+
+TABLECELL_DIMENS_CELL = 'cell'
+TABLECELL_DIMENS_WIDTH = 'width'
+TABLECELL_DIMENS_HEIGHT = 'height'
+TABLECELL_DIMENS_CELLID = 'cellid'
+
+PARSE_PAGE_LINK = 'link'
+PARSE_PAGE_FILENAME = 'filename'
+PARSE_PAGE_CATEGORY = 'category'
+PARSE_PAGE_MONTH = 'month'
+PARSE_PAGE_YEAR = 'year'
+PARSE_PAGE_DUP_PREFIX = 'dup_prefix'
+
+EXT_DOCX = '.docx'
+EXT_PDF = '.pdf'
+
+MONTHS = ['january', 'february', 'march',
+          'april', 'may', 'june', 'july',
+          'august', 'september', 'october',
+          'november', 'december']

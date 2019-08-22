@@ -1,8 +1,8 @@
+import argparse
 import multiprocessing as mp
 import os
 import subprocess
 import sys
-import argparse
 import time
 import traceback
 
@@ -21,14 +21,16 @@ from docx import Document
 from lxml import html
 
 from shared import docxtopdf
-from shared.constants import FILE_DIR, URL_PARAM_CATEGORY
+from shared.constants import FILE_DIR, URL_PARAM_CATEGORY, GLOBAL_LOGO_FILENAME, GLOBAL_LOGO_PATH, PARSE_PAGE_CATEGORY, \
+    PARSE_PAGE_YEAR, PARSE_PAGE_DUP_PREFIX, PARSE_PAGE_FILENAME, PARSE_PAGE_MONTH, PARSE_PAGE_LINK, \
+    GLOBAL_SAVE_PDF_COUNTER
 
 sys.path.append(FILE_DIR)
 
-from shared.builddocx_body_table import docx_build_body
-from shared.builddocx_main import docx_init_styles
+from shared.docx_body_table import docx_build_body
+from shared.docx_main import docx_init_styles
 from shared.globals import GLOBALS
-from shared.listing import get_year_pages, get_page
+from shared.parse_listing import get_year_pages, get_page
 from shared.parse_main import parse_article
 from shared.writers import write_error
 
@@ -213,57 +215,42 @@ def docx_test():
 
 
 def load_logo():
-    GLOBALS['LOGO_FILENAME'] = os.path.join(FILE_DIR,
-                                            'LOGO.png')  # parse_fetch_image(url=LOGO_URL, idx='', filename_prefix='LOGO', directory=FILE_DIR)
+    GLOBALS[GLOBAL_LOGO_FILENAME] = GLOBAL_LOGO_PATH
 
 
-def create_debug_dir():
-    directory = os.path.join(FILE_DIR, 'debug')
-
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-
-    return directory
+def get_debug_dir():
+    return os.path.join(FILE_DIR, 'debug')
 
 
 def parse_page(page, debug=False):
-    directory = os.path.join(FILE_DIR, page['category'], str(page['year']), page['month'],
-                             page['filename'] + page['dup_prefix'])
+    directory = os.path.join(FILE_DIR, page[PARSE_PAGE_CATEGORY], str(page[PARSE_PAGE_YEAR]), page[PARSE_PAGE_MONTH],
+                             page[PARSE_PAGE_FILENAME] + page[PARSE_PAGE_DUP_PREFIX])
 
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    if os.path.exists(directory):
+        os.rmdir(directory)
+
+    os.makedirs(directory)
+
     try:
-        os.remove(os.path.join(directory, 'debug.txt'))
-    except FileNotFoundError:
-        pass
-    try:
-        os.remove(os.path.join(directory, 'details.txt'))
-    except FileNotFoundError:
-        pass
-    try:
-        os.remove(os.path.join(directory, 'error.txt'))
-    except FileNotFoundError:
-        pass
-    try:
-        parse_article(url=page['link'], filename=page['filename'], dup_prefix=page['dup_prefix'],
-                        directory=directory, debug=debug)
-    except Exception as ex:
+        parse_article(url=page[PARSE_PAGE_LINK],
+                      filename=page[PARSE_PAGE_FILENAME], dup_prefix=page[PARSE_PAGE_DUP_PREFIX],
+                      directory=directory, debug=debug)
+    except Exception:
         traceback.print_exc()
         write_error(directory=directory, error='Exception', exception=traceback.format_exc())
 
 
-
 def init_shared(args):
-    GLOBALS['SAVE_PDF_COUNTER'] = args
+    GLOBALS[GLOBAL_SAVE_PDF_COUNTER] = args
 
 
-def listbyyear(category, year):
+def listbyyear(category, year, debug=False):
     load_logo()
     year_pages = get_year_pages(category, year)
     mp_lock = mp.Value('i', 0)
 
     with mp.Pool(processes=4, initializer=init_shared, initargs=(mp_lock,)) as p:
-        res = [p.apply_async(parse_page, args=(page,)) for page in year_pages]
+        res = [p.apply_async(parse_page, args=(page,), kwds={'debug': debug}) for page in year_pages]
         p.close()
         p.join()
         res = [r.get() for r in res]
@@ -276,7 +263,7 @@ def parse_pages(urls=[], directory='', debug=False):
     mp_lock = mp.Value('i', 0)
 
     with mp.Pool(processes=4, initializer=init_shared, initargs=(mp_lock,)) as p:
-        res = [p.apply_async(parse_page, args=(page, debug)) for page in pages]
+        res = [p.apply_async(parse_page, args=(page,), kwds={'debug': debug}) for page in pages]
         p.close()
         p.join()
         res = [r.get() for r in res]
@@ -300,18 +287,18 @@ def main():
         listbyyear(category=args['category'], year=args['year'])
     elif args['url'] is not None:
         load_logo()
-        debug_directory = create_debug_dir()
+        debug_directory = get_debug_dir()
         init_shared(mp.Value('i', 0))
         parse_pages(urls=[args['url']], debug=False)
     elif args['urls'] is not None:
         load_logo()
-        debug_directory = create_debug_dir()
+        debug_directory = get_debug_dir()
         urls = args['urls'].split(',')
         init_shared(mp.Value('i', 0))
         parse_pages(urls=urls, debug=False)
     elif args['debug'] is not None:
         load_logo()
-        debug_directory = create_debug_dir()
+        debug_directory = get_debug_dir()
         docx_test()
     else:
         parser.print_help()

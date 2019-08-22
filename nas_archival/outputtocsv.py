@@ -1,6 +1,6 @@
 import os
-import sys
 import re
+import sys
 import traceback
 
 from shared.constants import FILE_DIR
@@ -16,16 +16,17 @@ if len(sys.argv) != 2:
 filename = sys.argv[1].strip()
 HEADERS = ['Save Path', 'Article Type', 'URL', 'Title', 'DateTime', 'Body', 'Images', 'Others Text', 'Others Link',
            'Filename', 'Filename Prefix', 'Save Filename', RELATED]
-OUTPUT_HEADERS = ['Save Path', 'Article Type', 'URL', 'Title', 'DateTime', 'Filename', 'Filename Prefix', 'Save Filename', RELATED]
-DISPLAY_HEADERS = OUTPUT_HEADERS[:-1]\
-                  + list(map(lambda v: '{} 1 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1]))\
-                  + list(map(lambda v: '{} 2 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1]))\
-                  + list(map(lambda v: '{} 3 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1]))\
-                  + list(map(lambda v: '{} 4 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1]))\
-                  + list(map(lambda v: '{} 5 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1]))\
-                  + list(map(lambda v: '{} 6 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1]))\
-                  + list(map(lambda v: '{} 7 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1]))\
-                  + list(map(lambda v: '{} 8 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1]))\
+OUTPUT_HEADERS = ['Save Path', 'Article Type', 'URL', 'Title', 'DateTime', 'Filename', 'Filename Prefix',
+                  'Save Filename', RELATED]
+DISPLAY_HEADERS = OUTPUT_HEADERS[:-1] \
+                  + list(map(lambda v: '{} 1 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \
+                  + list(map(lambda v: '{} 2 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \
+                  + list(map(lambda v: '{} 3 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \
+                  + list(map(lambda v: '{} 4 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \
+                  + list(map(lambda v: '{} 5 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \
+                  + list(map(lambda v: '{} 6 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \
+                  + list(map(lambda v: '{} 7 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \
+                  + list(map(lambda v: '{} 8 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \
                   + list(map(lambda v: '{} 9 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1]))
 output = []
 
@@ -107,5 +108,3 @@ with open(output_filename, 'w') as wf:
     sorted_list = sorted(output, key=lambda v: int(v['Filename']) if 'Filename' in v else -1)
     csvstr_list = list(map(jsontocsvstr, sorted_list))
     wf.write('\r\n'.join(csvstr_list))
-
-
