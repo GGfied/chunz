@@ -20,11 +20,14 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
     print('Processing: {}, {}'.format(filename, url))
 
     try:
+        if not url.startswith('https://www.mindef.gov.sg/web/portal/mindef'):
+            raise Exception('URL Not Supported')
+
         page = requests.get(url)
         page_content = page.content
 
-        if parse_is_invalid_content(page_content):
-            raise Exception('404 Not Found')
+        if parse_is_invalid_content(page_content, page.status_code):
+            raise Exception('Not Found, Status Code: {}'.format(page.status_code))
     except Exception as ex:
         print('-------------------------')
         print(url, ex)

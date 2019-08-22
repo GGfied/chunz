@@ -1,10 +1,12 @@
 import argparse
 import multiprocessing as mp
 import os
+import shutil
 import subprocess
 import sys
 import time
 import traceback
+from functools import partial
 
 
 def install(package):
@@ -17,13 +19,15 @@ if __name__ == '__main__':
     install('requests')
     install('Pillow')
 
+os.environ['OBJC_DISABLE_INITIALIZE_FORK_SAFETY'] = 'YES'
+
 from docx import Document
 from lxml import html
 
 from shared import docxtopdf
 from shared.constants import FILE_DIR, URL_PARAM_CATEGORY, GLOBAL_LOGO_FILENAME, GLOBAL_LOGO_PATH, PARSE_PAGE_CATEGORY, \
     PARSE_PAGE_YEAR, PARSE_PAGE_DUP_PREFIX, PARSE_PAGE_FILENAME, PARSE_PAGE_MONTH, PARSE_PAGE_LINK, \
-    GLOBAL_SAVE_PDF_COUNTER
+    GLOBAL_SAVE_PDF_COUNTER, CPUS_TO_USE
 
 sys.path.append(FILE_DIR)
 
@@ -227,7 +231,7 @@ def parse_page(page, debug=False):
                              page[PARSE_PAGE_FILENAME] + page[PARSE_PAGE_DUP_PREFIX])
 
     if os.path.exists(directory):
-        os.rmdir(directory)
+        shutil.rmtree(directory)
 
     os.makedirs(directory)
 
@@ -249,7 +253,7 @@ def listbyyear(category, year, debug=False):
     year_pages = get_year_pages(category, year)
     mp_lock = mp.Value('i', 0)
 
-    with mp.Pool(processes=4, initializer=init_shared, initargs=(mp_lock,)) as p:
+    with mp.Pool(processes=CPUS_TO_USE, initializer=init_shared, initargs=(mp_lock,)) as p:
         res = [p.apply_async(parse_page, args=(page,), kwds={'debug': debug}) for page in year_pages]
         p.close()
         p.join()
@@ -257,12 +261,17 @@ def listbyyear(category, year, debug=False):
 
 
 def parse_pages(urls=[], directory='', debug=False):
+    with mp.Pool(processes=CPUS_TO_USE) as p:
+        pages = []
+        res = p.map_async(partial(get_page, directory=directory, dup_map=dict()), urls, callback=pages.extend)
+        res.wait()
+        p.close()
+        p.join()
+
     load_logo()
-    dup_map = dict()
-    pages = [get_page(url, directory=directory, dup_map=dup_map) for url in urls]
     mp_lock = mp.Value('i', 0)
 
-    with mp.Pool(processes=4, initializer=init_shared, initargs=(mp_lock,)) as p:
+    with mp.Pool(processes=CPUS_TO_USE, initializer=init_shared, initargs=(mp_lock,)) as p:
         res = [p.apply_async(parse_page, args=(page,), kwds={'debug': debug}) for page in pages]
         p.close()
         p.join()

@@ -37,6 +37,9 @@ def get_page(link, directory='', dup_map=dict()):
 
     try:
         page = requests.get(link)
+
+        if page.status_code != 200:
+            raise Exception('Error Code: {}'.format(page.status_code))
     except Exception as ex:
         print('-------------------------')
         print(link, ex)
@@ -75,7 +78,7 @@ def get_pages(category, year, long_month, page):
     }
     page = requests.get(url, params=params)
 
-    if parse_is_invalid_content(page.content):
+    if parse_is_invalid_content(page.content, page.status_code):
         return None
 
     tree = html.fromstring(page.content)

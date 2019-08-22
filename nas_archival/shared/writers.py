@@ -7,6 +7,7 @@ def write_error(directory=FILE_DIR, error='', exception=None):
     errormsg = '{}_{}\r\n'.format(error, '' if exception is None else str(exception))
 
     with open(os.path.join(directory, 'error.txt'), 'a') as f:
+        print(errormsg)
         f.write(errormsg)
 
 
