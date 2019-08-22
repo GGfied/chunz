@@ -8,7 +8,7 @@ from lxml import html
 from shared.constants import URL_PARAMS, URL_PARAM_SITEAREANAME, HOME_URL, SITE_AREA_NAME, PARAM_PAGE, PARAM_CATEGORY, \
     CATEGORIES
 from shared.parse_helpers import parse_append_hostname, parse_clean_url
-from shared.writers import write_details, write_error
+from shared.writers import write_error
 
 VISITED_MAP = dict()
 

@@ -4,6 +4,7 @@ import subprocess
 import sys
 import argparse
 import time
+import traceback
 
 
 def install(package):
@@ -14,6 +15,10 @@ if __name__ == '__main__':
     install('lxml')
     install('python-docx')
     install('requests')
+    install('Pillow')
+
+from docx import Document
+from lxml import html
 
 from shared import docxtopdf
 from shared.constants import FILE_DIR, URL_PARAM_CATEGORY
@@ -23,12 +28,9 @@ sys.path.append(FILE_DIR)
 from shared.builddocx_body_table import docx_build_body
 from shared.builddocx_main import docx_init_styles
 from shared.globals import GLOBALS
-from shared.listing import get_year_pages
+from shared.listing import get_year_pages, get_page
 from shared.parse_main import parse_article
-
-from docx import Document
-from lxml import html
-import sys
+from shared.writers import write_error
 
 
 def docx_test():
@@ -182,13 +184,30 @@ def docx_test():
 			- A total of 113 entries – 51 under the Open Category, and 62 under the Student Category – were received.</p>\
 			</td></tr>\
     </table>\
+    <p>\
+    How are you&nbsp;<b>dasdasdasd</b>&nbsp;sdfsdfsdfsd?\
+    How are you&nbsp;<a href="http://wwww.google.com.sg">dasdasdasd</a>&nbsp;sdfsdfsdfsd?\
+    </p>\
+    <p>\
+        <img alt="" src="/content/dam/imindef_media_library/photos/news_release/2016/jun/26jun16_nr/factsheet/thumbnail_26jun16_fs2.jpg" title="">\
+        <p>\
+            <img alt="" src="/content/dam/imindef_media_library/photos/news_release/2016/jun/26jun16_nr/factsheet/thumbnail_26jun16_fs2.jpg" title="">\
+            <p>\
+                <img alt="" src="/content/dam/imindef_media_library/photos/news_release/2016/jun/26jun16_nr/factsheet/thumbnail_26jun16_fs2.jpg" title="">\
+            </p>\
+        </p>\
+        <img alt="" src="/content/dam/imindef_media_library/photos/news_release/2016/jun/26jun16_nr/factsheet/thumbnail_26jun16_fs2.jpg" title="">\
+    </p>\
+    <img alt="" src="/content/dam/imindef_media_library/photos/news_release/2016/jun/26jun16_nr/factsheet/thumbnail_26jun16_fs2.jpg" title="">\
+    <img alt="" src="/content/dam/imindef_media_library/photos/news_release/2016/jun/26jun16_nr/factsheet/thumbnail_26jun16_fs2.jpg" title="">\
     </body>')
     xxxxx = html.fromstring(
         '<body><table><tr><td><p style="text-align: center;"><em>阿興薄餅 Heng\'s Popiah</em></p><p style="text-align: center;"><em>阿興薄餅 Heng\'s Popiah</em></p></td></tr></table></body>')
-    body = xxxx.xpath('//body')[0]
+    body = xxxx
     doc = Document()
     docx_init_styles(doc.styles)
-    docx_build_body(body, doc)
+    docx_build_body(body, doc, directory=os.path.join(FILE_DIR, 'debug'), filename_prefix='test')
+    doc.add_picture('debug/test.png')
     doc.save('debug/test.docx')
     docxtopdf.convert_to('debug', 'debug/test.docx')
 
@@ -207,7 +226,7 @@ def create_debug_dir():
     return directory
 
 
-def parse_page(page):
+def parse_page(page, debug=False):
     directory = os.path.join(FILE_DIR, page['category'], str(page['year']), page['month'],
                              page['filename'] + page['dup_prefix'])
 
@@ -225,12 +244,18 @@ def parse_page(page):
         os.remove(os.path.join(directory, 'error.txt'))
     except FileNotFoundError:
         pass
-    parse_article(url=page['link'], filename=page['filename'], dup_prefix=page['dup_prefix'],
-                  directory=directory)
+    try:
+        parse_article(url=page['link'], filename=page['filename'], dup_prefix=page['dup_prefix'],
+                        directory=directory, debug=debug)
+    except Exception as ex:
+        traceback.print_exc()
+        write_error(directory=directory, error='Exception', exception=traceback.format_exc())
+
 
 
 def init_shared(args):
     GLOBALS['SAVE_PDF_COUNTER'] = args
+
 
 def listbyyear(category, year):
     load_logo()
@@ -244,6 +269,19 @@ def listbyyear(category, year):
         res = [r.get() for r in res]
 
 
+def parse_pages(urls=[], directory='', debug=False):
+    load_logo()
+    dup_map = dict()
+    pages = [get_page(url, directory=directory, dup_map=dup_map) for url in urls]
+    mp_lock = mp.Value('i', 0)
+
+    with mp.Pool(processes=4, initializer=init_shared, initargs=(mp_lock,)) as p:
+        res = [p.apply_async(parse_page, args=(page, debug)) for page in pages]
+        p.close()
+        p.join()
+        res = [r.get() for r in res]
+
+
 def main():
     parser = argparse.ArgumentParser(prog='NAS Archival', description='Parse URL to NAS .pdf')
     parser.add_argument('--url', dest='url',
@@ -252,6 +290,8 @@ def main():
                         help='year of <category> articles REQUIRED 2')
     parser.add_argument('--category', dest='category', choices=URL_PARAM_CATEGORY,
                         help='category of articles REQUIRED 2')
+    parser.add_argument('--urls', dest='urls',
+                        help='urls of articles, comma-separated REQUIRED 3')
     parser.add_argument('--debug', dest='debug')
     args = vars(parser.parse_args())
 
@@ -261,10 +301,14 @@ def main():
     elif args['url'] is not None:
         load_logo()
         debug_directory = create_debug_dir()
-        parse_article(
-            url=args['url'],
-            directory=debug_directory,
-            debug=True)
+        init_shared(mp.Value('i', 0))
+        parse_pages(urls=[args['url']], debug=False)
+    elif args['urls'] is not None:
+        load_logo()
+        debug_directory = create_debug_dir()
+        urls = args['urls'].split(',')
+        init_shared(mp.Value('i', 0))
+        parse_pages(urls=urls, debug=False)
     elif args['debug'] is not None:
         load_logo()
         debug_directory = create_debug_dir()
