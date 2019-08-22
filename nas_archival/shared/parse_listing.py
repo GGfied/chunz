@@ -5,7 +5,7 @@ import re
 import requests
 from lxml import html
 from shared.constants import FILE_DIR, PARSE_PAGE_CATEGORY, PARSE_PAGE_YEAR, PARSE_PAGE_FILENAME, PARSE_PAGE_LINK, \
-    PARSE_PAGE_DUP_PREFIX, PARSE_PAGE_MONTH, MONTHS
+    PARSE_PAGE_DUP_PREFIX, PARSE_PAGE_MONTH, MONTHS, ERROR
 from shared.docx_helpers import docx_get_dup_prefix
 from shared.parse_helpers import parse_clean_url, parse_append_hostname, parse_extract_datetime, parse_filename, \
     parse_is_invalid_content, parse_get_datetimestr
@@ -30,7 +30,7 @@ def get_page(link, directory='', dup_map=dict()):
     if not res:
         write_error(directory, error='Invalid URL No Year or Month: {}'.format(link))
 
-        return 'ERROR'
+        return ERROR
 
     year = int(res.group(1))
     long_month = res.group(2)
@@ -46,7 +46,7 @@ def get_page(link, directory='', dup_map=dict()):
         print('-------------------------')
         write_error(directory, error='Invalid URL: {}'.format(link), exception=ex)
 
-        return 'ERROR'
+        return ERROR
 
     tree = html.fromstring(page.content)
 

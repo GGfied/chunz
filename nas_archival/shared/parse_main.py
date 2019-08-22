@@ -3,7 +3,7 @@ import re
 
 import requests
 from lxml import html, etree
-from shared.constants import ARTICLE_TYPES_MAP, EXT_DOCX
+from shared.constants import ARTICLE_TYPES_MAP, EXT_DOCX, ERROR, MISSING_TYPE, NOT_SUPPORTED
 from shared.docx_helpers import docx_get_filename_prefix, docx_get_save_filename, docx_get_dup_prefix
 from shared.docx_main import docx_build
 from shared.parse_helpers import parse_append_hostname, parse_clean_url, parse_cleanup, parse_extract_img_link_caption, \
@@ -34,7 +34,7 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
         print('-------------------------')
         write_error(directory, error='Invalid URL: {}'.format(url), exception=ex)
 
-        return 'ERROR'
+        return ERROR
 
     tree = html.fromstring(page_content)
 
@@ -44,7 +44,12 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
 
     article_types = tree.xpath(
         '//div[@class="article-detail__heading"]/div[@class="article-info"]/span[contains(@class, "item-label")]/text()')
-    article_type = parse_cleanup(article_types[0] if len(article_types) > 0 else 'MISSING').upper()
+    article_type = parse_cleanup(article_types[0] if len(article_types) > 0 else MISSING_TYPE).upper()
+
+    if article_type not in ARTICLE_TYPES_MAP.keys():
+        write_error(directory, error='Not Supported Article Type: {}, URL: {}'.format(article_type, url))
+
+        return NOT_SUPPORTED
 
     datetime_str = parse_get_datetimestr(tree)
 

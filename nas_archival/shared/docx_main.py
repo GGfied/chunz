@@ -135,7 +135,11 @@ def docx_build(save_filename, filename_prefix, directory, title, datetime_str, i
         doc.add_paragraph(others_title, style=MORE_RESOURCES_TITLE_STYLE)
 
         for i in range(num_overall):
-            doc.add_paragraph(docx_get_others_text(others_text[i], others_link[i]), style=LIST_BULLET_STYLE)
+            ol_text = others_text[i]
+            ol_link = others_link[i]
+
+            if ol_link != ERROR and ol_link != NOT_SUPPORTED:
+                doc.add_paragraph(docx_get_others_text(ol_text, ol_link), style=LIST_BULLET_STYLE)
 
     save_path = os.path.join(directory, save_filename)
     print('Saving to DOCX: {}'.format(save_path))
