@@ -33,15 +33,15 @@ Directory: <category>/<year>/<month string>/<yyyymmdd>
 e.g. news-releases/2019/march/20190330, news-releases/2019/march/20190330_1
 
 Files:
-    - pdf, MINDEF_20190330001.pdf
-    - docx，MINDEF_20190330001.docx
-    - (if any) images, MINDEF_20190330001_IMG_0.png, MINDEF_20190330001_IMG_1.png,....
-    - (if any) related pdfs, MINDEF_20190330002.pdf, MINDEF_20190330003.pdf
-    - (if any) related docx, MINDEF_20190330002.docx, MINDEF_20190330003.docx
-    - (if any) related images, MINDEF_20190330003_IMG_0.PNG,... 
-    - debug.txt: To retrieve info for csv and for debugging
-    - details.txt: Title and Link of Articles fetched
-    - error.txt: Error log if its unsuccessful, have to do manual editing
+  - pdf, MINDEF_20190330001.pdf
+  - docx，MINDEF_20190330001.docx
+  - (if any) images, MINDEF_20190330001_IMG_0.png, MINDEF_20190330001_IMG_1.png,....
+  - (if any) related pdfs, MINDEF_20190330002.pdf, MINDEF_20190330003.pdf
+  - (if any) related docx, MINDEF_20190330002.docx, MINDEF_20190330003.docx
+  - (if any) related images, MINDEF_20190330003_IMG_0.PNG,... 
+  - debug.txt: To retrieve info for csv and for debugging
+  - details.txt: Title and Link of Articles fetched
+  - error.txt: Error log if its unsuccessful, have to do manual editing
 
 ### 2. Generate for a list of urls
 
@@ -72,15 +72,15 @@ Directory: manual/<year>/<month string>/<yyyymmdd>
 e.g. manual/2019/march/20190330, manual/2019/march/20190330_1
 
 Files:
-    - pdf, MINDEF_20190330001.pdf
-    - docx，MINDEF_20190330001.docx
-    - (if any) images, MINDEF_20190330001_IMG_0.png, MINDEF_20190330001_IMG_1.png,....
-    - (if any) related pdfs, MINDEF_20190330002.pdf, MINDEF_20190330003.pdf
-    - (if any) related docx, MINDEF_20190330002.docx, MINDEF_20190330003.docx
-    - (if any) related images, MINDEF_20190330003_IMG_0.PNG,... 
-    - debug.txt: To retrieve info for csv and for debugging
-    - details.txt: Title and Link of Articles fetched
-    - error.txt: Error log if its unsuccessful, have to do manual editing
+  - pdf, MINDEF_20190330001.pdf
+  - docx，MINDEF_20190330001.docx
+  - (if any) images, MINDEF_20190330001_IMG_0.png, MINDEF_20190330001_IMG_1.png,....
+  - (if any) related pdfs, MINDEF_20190330002.pdf, MINDEF_20190330003.pdf
+  - (if any) related docx, MINDEF_20190330002.docx, MINDEF_20190330003.docx
+  - (if any) related images, MINDEF_20190330003_IMG_0.PNG,... 
+  - debug.txt: To retrieve info for csv and for debugging
+  - details.txt: Title and Link of Articles fetched
+  - error.txt: Error log if its unsuccessful, have to do manual editing
 
 ### 3. Generate for url
 #### Run Script
@@ -104,15 +104,15 @@ Directory: manual/<year>/<month string>/<yyyymmdd>
 e.g. manual/2019/march/20190330, manual/2019/march/20190330_1
 
 Files:
-    - pdf, MINDEF_20190330001.pdf
-    - docx，MINDEF_20190330001.docx
-    - (if any) images, MINDEF_20190330001_IMG_0.png, MINDEF_20190330001_IMG_1.png,....
-    - (if any) related pdfs, MINDEF_20190330002.pdf, MINDEF_20190330003.pdf
-    - (if any) related docx, MINDEF_20190330002.docx, MINDEF_20190330003.docx
-    - (if any) related images, MINDEF_20190330003_IMG_0.PNG,... 
-    - debug.txt: To retrieve info for csv and for debugging
-    - details.txt: Title and Link of Articles fetched
-    - error.txt: Error log if its unsuccessful, have to do manual editing
+  - pdf, MINDEF_20190330001.pdf
+  - docx，MINDEF_20190330001.docx
+  - (if any) images, MINDEF_20190330001_IMG_0.png, MINDEF_20190330001_IMG_1.png,....
+  - (if any) related pdfs, MINDEF_20190330002.pdf, MINDEF_20190330003.pdf
+  - (if any) related docx, MINDEF_20190330002.docx, MINDEF_20190330003.docx
+  - (if any) related images, MINDEF_20190330003_IMG_0.PNG,... 
+  - debug.txt: To retrieve info for csv and for debugging
+  - details.txt: Title and Link of Articles fetched
+  - error.txt: Error log if its unsuccessful, have to do manual editing
 
 ## Notes
 Related More Resources Supported are
