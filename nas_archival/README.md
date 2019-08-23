@@ -23,20 +23,20 @@ OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES python3 nas.py --year <year> --category 
 ```
 
 #### Script Parameters
-year - Year of pages
+*year* - Year of pages
 
-category - Category of pages
+*category* - Category of pages
 
 VALID CATEGORIES - news-releases, speeches, others
 
-(optional default is True) follow-related-links - Generate for related resources?
+(optional default is True) *follow-related-links* - Generate for related resources?
 
 #### Output
-Directory: <category>/<year>/<month string>/<yyyymmdd>
+*Directory:* \<category\>/\<year>\/\<month string\>/\<yyyymmdd\>
 
 e.g. news-releases/2019/march/20190330, news-releases/2019/march/20190330_1
 
-Files:
+*Files:*
   - pdf, MINDEF_20190330001.pdf
   - docx，MINDEF_20190330001.docx
   - (if any) images, MINDEF_20190330001_IMG_0.png, MINDEF_20190330001_IMG_1.png,....
@@ -68,16 +68,16 @@ python3 nas.py --urls `cat <filename>|tr '\n' ','` --follow-related-links <True/
 ```
 
 #### Script Parameters
-urls - list of urls seperated by comma
+*urls* - list of urls seperated by comma
 
-(optional default is True) follow-related-links - Generate for related resources?
+(optional default is True) *follow-related-links* - Generate for related resources?
 
 #### Output
-Directory: manual/<year>/<month string>/<yyyymmdd>
+*Directory:* manual/\<year\>/\<month string\>/\<yyyymmdd\>
 
 e.g. manual/2019/march/20190330, manual/2019/march/20190330_1
 
-Files:
+*Files:*
   - pdf, MINDEF_20190330001.pdf
   - docx，MINDEF_20190330001.docx
   - (if any) images, MINDEF_20190330001_IMG_0.png, MINDEF_20190330001_IMG_1.png,....
@@ -102,16 +102,16 @@ OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES python3 nas.py --url <url> --follow-rela
 e.g. python3 nas.py --url url1
 
 #### Script Parameters
-url - url of article
+*url* - url of article
 
-(optional default is True) follow-related-links - Generate for related resources?
+(optional default is True) *follow-related-links* - Generate for related resources?
 
 #### Output
-Directory: manual/<year>/<month string>/<yyyymmdd>
+*Directory:* manual/\<year\>/\<month string\>/\<yyyymmdd\>
 
 e.g. manual/2019/march/20190330, manual/2019/march/20190330_1
 
-Files:
+*Files:*
   - pdf, MINDEF_20190330001.pdf
   - docx，MINDEF_20190330001.docx
   - (if any) images, MINDEF_20190330001_IMG_0.png, MINDEF_20190330001_IMG_1.png,....
