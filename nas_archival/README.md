@@ -25,6 +25,8 @@ OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES python3 nas.py --year <year> --category 
 ```
 
 *e.g. python3 nas.py --year 2019 --category news-releases*
+
+
 #### Script Parameters
 **year** - Year of pages
 
@@ -34,21 +36,23 @@ OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES python3 nas.py --year <year> --category 
 
 *(optional default is True)* **follow-related-links** - Generate for related resources?
 
+
 #### Output
 **Directory:** *\<category\>/\<year>\/\<month string\>/\<yyyymmdd\>*
 
 *e.g. news-releases/2019/march/20190330, news-releases/2019/march/20190330_1*
 
 **Files:**
-  - pdf, MINDEF_20190330001.pdf
-  - docx，MINDEF_20190330001.docx
-  - (if any) images, MINDEF_20190330001_IMG_0.png, MINDEF_20190330001_IMG_1.png,....
-  - (if any) related pdfs, MINDEF_20190330002.pdf, MINDEF_20190330003.pdf
-  - (if any) related docx, MINDEF_20190330002.docx, MINDEF_20190330003.docx
-  - (if any) related images, MINDEF_20190330003_IMG_0.PNG,... 
-  - debug.txt: To retrieve info for csv and for debugging
-  - details.txt: Title and Link of Articles fetched
-  - (if any) error.txt: Error log if its unsuccessful, have to do manual editing
+  - **\*.pdf**: MINDEF_20190330001.pdf
+  - **\*.docx**: MINDEF_20190330001.docx
+  - *(if any)* **\*.png**: MINDEF_20190330001_IMG_0.png, MINDEF_20190330001_IMG_1.png,....
+  - *(if any)* **related \*.pdf**: MINDEF_20190330002.pdf, MINDEF_20190330003.pdf
+  - *(if any)* **related \*.docx**: MINDEF_20190330002.docx, MINDEF_20190330003.docx
+  - *(if any)* **related \*.png**: MINDEF_20190330003_IMG_0.PNG,... 
+  - **debug.txt**: To retrieve info for csv and for debugging
+  - **details.txt**: Title and Link of Articles fetched
+  - *(if any)* **error.txt**: Error log if its unsuccessful, have to do manual editing
+
 
 ### 2. Generate for a list of urls
 
@@ -76,21 +80,23 @@ python3 nas.py --urls `cat <filename>|tr '\n' ','` --follow-related-links <True/
 
 *(optional default is True)* **follow-related-links** - Generate for related resources?
 
+
 #### Output
 **Directory:** *manual/\<year\>/\<month string\>/\<yyyymmdd\>*
 
 *e.g. manual/2019/march/20190330, manual/2019/march/20190330_1*
 
 **Files:**
-  - pdf, MINDEF_20190330001.pdf
-  - docx，MINDEF_20190330001.docx
-  - (if any) images, MINDEF_20190330001_IMG_0.png, MINDEF_20190330001_IMG_1.png,....
-  - (if any) related pdfs, MINDEF_20190330002.pdf, MINDEF_20190330003.pdf
-  - (if any) related docx, MINDEF_20190330002.docx, MINDEF_20190330003.docx
-  - (if any) related images, MINDEF_20190330003_IMG_0.PNG,... 
-  - debug.txt: To retrieve info for csv and for debugging
-  - details.txt: Title and Link of Articles fetched
-  - (if any) error.txt: Error log if its unsuccessful, have to do manual editing
+  - **\*.pdf**: MINDEF_20190330001.pdf
+  - **\*.docx**: MINDEF_20190330001.docx
+  - *(if any)* **\*.png**: MINDEF_20190330001_IMG_0.png, MINDEF_20190330001_IMG_1.png,....
+  - *(if any)* **related \*.pdf**: MINDEF_20190330002.pdf, MINDEF_20190330003.pdf
+  - *(if any)* **related \*.docx**: MINDEF_20190330002.docx, MINDEF_20190330003.docx
+  - *(if any)* **related \*.png**: MINDEF_20190330003_IMG_0.PNG,... 
+  - **debug.txt**: To retrieve info for csv and for debugging
+  - **details.txt**: Title and Link of Articles fetched
+  - *(if any)* **error.txt**: Error log if its unsuccessful, have to do manual editing
+
 
 ### 3. Generate for url
 #### Run Script
@@ -106,10 +112,12 @@ OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES python3 nas.py --url <url> --follow-rela
 
 *e.g. python3 nas.py --url url1*
 
+
 #### Script Parameters
 **url** - url of article
 
 *(optional default is True)* **follow-related-links** - Generate for related resources?
+
 
 #### Output
 **Directory:** *manual/\<year\>/\<month string\>/\<yyyymmdd\>*
@@ -117,15 +125,15 @@ OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES python3 nas.py --url <url> --follow-rela
 *e.g. manual/2019/march/20190330, manual/2019/march/20190330_1*
 
 **Files:**
-  - pdf, MINDEF_20190330001.pdf
-  - docx，MINDEF_20190330001.docx
-  - (if any) images, MINDEF_20190330001_IMG_0.png, MINDEF_20190330001_IMG_1.png,....
-  - (if any) related pdfs, MINDEF_20190330002.pdf, MINDEF_20190330003.pdf
-  - (if any) related docx, MINDEF_20190330002.docx, MINDEF_20190330003.docx
-  - (if any) related images, MINDEF_20190330003_IMG_0.PNG,... 
-  - debug.txt: To retrieve info for csv and for debugging
-  - details.txt: Title and Link of Articles fetched
-  - (if any) error.txt: Error log if its unsuccessful, have to do manual editing
+  - **\*.pdf**: MINDEF_20190330001.pdf
+  - **\*.docx**: MINDEF_20190330001.docx
+  - *(if any)* **\*.png**: MINDEF_20190330001_IMG_0.png, MINDEF_20190330001_IMG_1.png,....
+  - *(if any)* **related \*.pdf**: MINDEF_20190330002.pdf, MINDEF_20190330003.pdf
+  - *(if any)* **related \*.docx**: MINDEF_20190330002.docx, MINDEF_20190330003.docx
+  - *(if any)* **related \*.png**: MINDEF_20190330003_IMG_0.PNG,... 
+  - **debug.txt**: To retrieve info for csv and for debugging
+  - **details.txt**: Title and Link of Articles fetched
+  - *(if any)* **error.txt**: Error log if its unsuccessful, have to do manual editing
 
 ## Notes
 Related More Resources Supported are
@@ -156,11 +164,12 @@ python3 outputtocsv.py <directory to search>
 
 *e.g. python3 outputtocsv.py news-releases
 
+
 ### Output
-**Directory**: Script Directory
+**Directory**: *Script Directory*
 
 **Files**:
-  - outputtocsv_results.csv
-  - (if any) outputtocsv_errors.txt
+  - **outputtocsv_results.csv**
+  - *(if any)* **outputtocsv_errors.txt**
 
 
