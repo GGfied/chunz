@@ -6,7 +6,9 @@ To generate NAS Archival .pdf and .docx from Webpage
 2. LibreOffice >= 6.0 https://www.libreoffice.org/download/download/
 3. Write, Remove, Create Files and Directories Permissions
 4. Windows requires Git Bash https://git-scm.com/downloads
-5. No proxy if have set before running
+5. No proxy if require set before running
+  - set HTTP_PROXY=http://<proxy username>:<proxy password>@<proxy host>:<proxy port>
+  - set HTTPS_PROXY=https://<proxy username>:<proxy password>@<proxy host>:<proxy port>
 
 ## How to Use
 ### 1. Generate for year and category
@@ -46,7 +48,7 @@ OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES python3 nas.py --year <year> --category 
   - (if any) related images, MINDEF_20190330003_IMG_0.PNG,... 
   - debug.txt: To retrieve info for csv and for debugging
   - details.txt: Title and Link of Articles fetched
-  - error.txt: Error log if its unsuccessful, have to do manual editing
+  - (if any) error.txt: Error log if its unsuccessful, have to do manual editing
 
 ### 2. Generate for a list of urls
 
@@ -88,7 +90,7 @@ python3 nas.py --urls `cat <filename>|tr '\n' ','` --follow-related-links <True/
   - (if any) related images, MINDEF_20190330003_IMG_0.PNG,... 
   - debug.txt: To retrieve info for csv and for debugging
   - details.txt: Title and Link of Articles fetched
-  - error.txt: Error log if its unsuccessful, have to do manual editing
+  - (if any) error.txt: Error log if its unsuccessful, have to do manual editing
 
 ### 3. Generate for url
 #### Run Script
@@ -123,7 +125,7 @@ OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES python3 nas.py --url <url> --follow-rela
   - (if any) related images, MINDEF_20190330003_IMG_0.PNG,... 
   - debug.txt: To retrieve info for csv and for debugging
   - details.txt: Title and Link of Articles fetched
-  - error.txt: Error log if its unsuccessful, have to do manual editing
+  - (if any) error.txt: Error log if its unsuccessful, have to do manual editing
 
 ## Notes
 Related More Resources Supported are
@@ -146,5 +148,19 @@ Rest will be ignored such as reply to mq, cyberpioneer/army/navy/airforce articl
 - HDD no space
 - Domain Blocked due to spam requests
 
+## Output Summary of Articles into .csv
+### Run Script
+```
+python3 outputtocsv.py <directory to search>
+```
+
+*e.g. python3 outputtocsv.py news-releases
+
+### Output
+**Directory**: Script Directory
+
+**Files**:
+  - outputtocsv_results.csv
+  - (if any) outputtocsv_errors.txt
 
 
