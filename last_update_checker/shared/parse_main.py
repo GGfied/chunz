@@ -1,15 +1,16 @@
 import re
 
 import requests
-from shared.docx_main import docx_build
-from shared.constants import ARTICLE_TYPES_MAP
 from lxml import html
+from shared.constants import ARTICLE_TYPES_MAP
+from shared.docx_main import docx_build
 from shared.parse_helpers import parse_append_hostname, parse_clean_url, parse_cleanup, parse_extract_img_link_caption, \
     parse_filename, parse_extract_datetime
 from shared.writers import write_details, write_error
 
 
-def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dict(), dup_filename_map=dict(), debug=False):
+def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dict(), dup_filename_map=dict(),
+                  debug=False):
     if url in visited_map:
         return visited_map[url]
 
@@ -78,7 +79,8 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
 
     if not debug:
         for i in range(len(others_link)):
-            others_link[i] = parse_article(url=others_link[i], directory=directory, visited_map=visited_map, dup_prefix=dup_prefix, dup_filename_map=dup_filename_map)
+            others_link[i] = parse_article(url=others_link[i], directory=directory, visited_map=visited_map,
+                                           dup_prefix=dup_prefix, dup_filename_map=dup_filename_map)
 
     save_filename = docx_build(save_filename, filename_prefix, directory, title, datetime_str, images, body,
                                others_text, others_link)

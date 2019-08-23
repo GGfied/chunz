@@ -5,7 +5,7 @@ import re
 import requests
 from lxml import html
 from shared.constants import FILE_DIR, PARSE_PAGE_CATEGORY, PARSE_PAGE_YEAR, PARSE_PAGE_FILENAME, PARSE_PAGE_LINK, \
-    PARSE_PAGE_DUP_PREFIX, PARSE_PAGE_MONTH, MONTHS, ERROR
+    PARSE_PAGE_DUP_PREFIX, PARSE_PAGE_MONTH, MONTHS, ERROR, DEFAULT_TIMEOUT_SECS
 from shared.docx_helpers import docx_get_dup_prefix
 from shared.parse_helpers import parse_clean_url, parse_append_hostname, parse_extract_datetime, parse_filename, \
     parse_is_invalid_content, parse_get_datetimestr
@@ -36,14 +36,11 @@ def get_page(link, directory='', dup_map=dict()):
     long_month = res.group(2)
 
     try:
-        page = requests.get(link)
+        page = requests.get(link, timeout=DEFAULT_TIMEOUT_SECS)
 
-        if page.status_code != 200:
-            raise Exception('Error Code: {}'.format(page.status_code))
+        if parse_is_invalid_content(page.content, page.status_code):
+            raise Exception('Content: {}, Error Code: {}'.format(page.content, page.status_code))
     except Exception as ex:
-        print('-------------------------')
-        print(link, ex)
-        print('-------------------------')
         write_error(directory, error='Invalid URL: {}'.format(link), exception=ex)
 
         return ERROR
@@ -76,7 +73,7 @@ def get_pages(category, year, long_month, page):
         'connectorcache': 'none',
         'wcm_page.MENU-latest-releases': page,
     }
-    page = requests.get(url, params=params)
+    page = requests.get(url, params=params, timeout=DEFAULT_TIMEOUT_SECS)
 
     if parse_is_invalid_content(page.content, page.status_code):
         return None

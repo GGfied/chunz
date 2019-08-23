@@ -1,9 +1,8 @@
+import argparse
 import os
 import subprocess
 import sys
-import argparse
 
-from shared import docxtopdf
 from shared.constants import FILE_DIR, URL_PARAM_CATEGORY
 
 sys.path.append(FILE_DIR)
@@ -20,8 +19,8 @@ if __name__ == '__main__':
     install('python-docx')
     install('requests')
 
-from lxml import html
 import sys
+
 
 def create_debug_dir():
     directory = os.path.join(FILE_DIR, 'debug')
@@ -30,6 +29,7 @@ def create_debug_dir():
         os.makedirs(directory)
 
     return directory
+
 
 def main():
     parser = argparse.ArgumentParser(prog='NAS Archival', description='Parse URL to NAS .pdf')

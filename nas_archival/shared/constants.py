@@ -50,8 +50,8 @@ RUN_LINK_STYLE = 'RUN_LINK_STYLE'
 MORE_RESOURCES_TITLE = 'More Resources:'
 NEWS_RELEASE_TITLE = 'News Release:'
 NEWS_RELEASES_TITLE = 'News Releases:'
-FACT_SHEET_TITLE = 'Fact Sheets:'
-FACT_SHEETS_TITLE = 'Fact Sheet:'
+FACT_SHEET_TITLE = 'Fact Sheet:'
+FACT_SHEETS_TITLE = 'Fact Sheets:'
 SPEECH_TITLE = 'Speech:'
 SPEECHES_TITLE = 'Speeches:'
 
@@ -137,6 +137,7 @@ MONTHS = ['january', 'february', 'march',
           'november', 'december']
 
 CPUS_TO_USE = 4
+DEFAULT_TIMEOUT_SECS = 120
 
 ERROR = 'ERROR'
 NOT_SUPPORTED = 'NOT_SUPPORTED'

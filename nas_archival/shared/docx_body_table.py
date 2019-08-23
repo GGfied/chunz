@@ -2,6 +2,7 @@ import re
 
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_BREAK
+from lxml import etree
 from shared.constants import RUN_BODY_STYLE, BODY_STYLE, TABLE_STYLE, RUN_LIST_BULLET_STYLE, RUN_LIST_NUMBER_STYLE, \
     HANDLED_TAGS, HREF_ATTRIB, LIST_BULLET_STYLE, LIST_NUMBER_STYLE, \
     LIST_TAGS, BOLD_TAGS, ITALIC_TAGS, PARAGRAPH_TAGS, REQ_NEW_PARA_TAGS, RUN_TABLE_STYLE, LIST_TYPE_UNORDERED, \
@@ -86,11 +87,17 @@ def docx_build_body(body, doc=None,
 
     for idx in range(num_children):
         child_ele = children[idx]
-        tag = child_ele.tag.lower()
+        tag = child_ele.tag
+
+        if tag is etree.Comment:
+            write_error(directory, error='NOT HANDLED COMMENT')
+            continue
+
+        tag = tag.lower()
 
         if tag not in HANDLED_TAGS:
             write_error(directory, error='NOT HANDLED TAG: {}'.format(tag))
-
+            continue
         if tag == STYLE_TAG:
             write_error(directory, error='STYLE TEXT: {}'.format(child_ele.text))
             continue
@@ -115,7 +122,9 @@ def docx_build_body(body, doc=None,
             raw_before_text = child_ele.text
 
         # Handle nbsp; before inline child
-        if raw_before_text is not None and raw_before_text.endswith(NBSP) and len(child_ele.getchildren()) > 0 \
+        if raw_before_text is not None and raw_before_text.endswith(NBSP) \
+                and len(child_ele.getchildren()) > 0 \
+                and child_ele.getchildren()[0].tag is not etree.Comment \
                 and child_ele.getchildren()[0].tag in INLINE_TAGS:
             child_ele.text = re.sub('{}$'.format(NBSP), ' ', raw_before_text)
             raw_before_text = child_ele.text
@@ -141,7 +150,8 @@ def docx_build_body(body, doc=None,
         ###
         # Adding of run and paragraph if necessary and various conditions for run
         ###
-        if tag == A_TAG and HREF_ATTRIB in child_ele.attrib and child_ele.attrib[HREF_ATTRIB] is not None \
+        if tag == A_TAG and HREF_ATTRIB in child_ele.attrib \
+                and child_ele.attrib[HREF_ATTRIB] is not None \
                 and child_ele.attrib[HREF_ATTRIB] != '':
             url = child_ele.attrib[HREF_ATTRIB]
             before_run = docx_add_hyperlink(para_to_use, url, before_text, old_run=before_run)
@@ -231,7 +241,8 @@ def docx_build_body(body, doc=None,
         # properties. Other Conditions: Next Tag is not REQ_NEW_PARA_TAGS AND (Have After Text OR Not Last Child)
         next_idx = idx + 1
         is_not_last_child = next_idx < num_children
-        next_tag = children[next_idx].tag.lower() if is_not_last_child else ''
+        next_tag = children[next_idx].tag.lower() if is_not_last_child and children[
+            next_idx].tag is not etree.Comment else ''
         is_next_tag_req_new_para = is_not_last_child and next_tag not in REQ_NEW_PARA_TAGS
 
         if (after_text is not '' or is_next_tag_req_new_para) and tag in REQ_NEW_PARA_TAGS:
