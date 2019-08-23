@@ -3,7 +3,7 @@ import re
 
 import requests
 from lxml import html, etree
-from shared.constants import ARTICLE_TYPES_MAP, EXT_DOCX
+from shared.constants import ARTICLE_TYPES_MAP, EXT_DOCX, ERROR, MISSING_TYPE, NOT_SUPPORTED, DEFAULT_TIMEOUT_SECS
 from shared.docx_helpers import docx_get_filename_prefix, docx_get_save_filename, docx_get_dup_prefix
 from shared.docx_main import docx_build
 from shared.parse_helpers import parse_append_hostname, parse_clean_url, parse_cleanup, parse_extract_img_link_caption, \
@@ -12,7 +12,7 @@ from shared.writers import write_debug, write_details, write_error
 
 
 def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dict(), filename_to_dupcount_map=dict(),
-                  debug=False):
+                  is_follow_related_links=True, debug=False):
     if url in visited_map:
         return visited_map[url]
 
@@ -23,7 +23,7 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
         if not url.startswith('https://www.mindef.gov.sg/web/portal/mindef'):
             raise Exception('URL Not Supported')
 
-        page = requests.get(url)
+        page = requests.get(url, timeout=DEFAULT_TIMEOUT_SECS)
         page_content = page.content
 
         if parse_is_invalid_content(page_content, page.status_code):
@@ -34,7 +34,7 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
         print('-------------------------')
         write_error(directory, error='Invalid URL: {}'.format(url), exception=ex)
 
-        return 'ERROR'
+        return ERROR
 
     tree = html.fromstring(page_content)
 
@@ -44,7 +44,12 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
 
     article_types = tree.xpath(
         '//div[@class="article-detail__heading"]/div[@class="article-info"]/span[contains(@class, "item-label")]/text()')
-    article_type = parse_cleanup(article_types[0] if len(article_types) > 0 else 'MISSING').upper()
+    article_type = parse_cleanup(article_types[0] if len(article_types) > 0 else MISSING_TYPE).upper()
+
+    if article_type not in ARTICLE_TYPES_MAP.keys():
+        write_error(directory, error='Not Supported Article Type: {}, URL: {}'.format(article_type, url))
+
+        return NOT_SUPPORTED
 
     datetime_str = parse_get_datetimestr(tree)
 
@@ -54,13 +59,17 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
 
     body = tree.xpath('//div[@class="row"]//div[@class="article"]')[0]
 
-    others_text = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/p/a')
-    others_text = list(map(lambda v: ''.join(v.itertext()), others_text))
-    others_text = list(map(parse_cleanup, others_text))
+    if is_follow_related_links:
+        others_text = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/p/a')
+        others_text = list(map(lambda v: ''.join(v.itertext()), others_text))
+        others_text = list(map(parse_cleanup, others_text))
 
-    others_link = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/p/a/@href')
-    others_link = list(map(parse_clean_url, others_link))
-    others_link = list(map(parse_append_hostname, others_link))
+        others_link = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/p/a/@href')
+        others_link = list(map(parse_clean_url, others_link))
+        others_link = list(map(parse_append_hostname, others_link))
+    else:
+        others_text = []
+        others_link = []
 
     article_type_prefix = ARTICLE_TYPES_MAP[article_type]
 
@@ -90,10 +99,10 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
     save_filename_no_ext = re.sub(EXT_DOCX + '$', '', save_filename)
     visited_map[url] = save_filename_no_ext
 
-    if not debug:
-        for i in range(len(others_link)):
-            others_link[i] = parse_article(url=others_link[i], directory=directory, visited_map=visited_map,
-                                           dup_prefix=dup_prefix, filename_to_dupcount_map=filename_to_dupcount_map)
+    for i in range(len(others_link)):
+        others_link[i] = parse_article(url=others_link[i], directory=directory, visited_map=visited_map,
+                                       dup_prefix=dup_prefix, filename_to_dupcount_map=filename_to_dupcount_map,
+                                       is_follow_related_links=is_follow_related_links)
 
     docx_build(save_filename, filename_prefix, directory, title, datetime_str, images, body,
                others_text=others_text, others_link=others_link)

@@ -226,7 +226,10 @@ def get_debug_dir():
     return os.path.join(FILE_DIR, 'debug')
 
 
-def parse_page(page, debug=False):
+def parse_page(page, is_follow_related_links=True, debug=False):
+    if PARSE_PAGE_CATEGORY not in page and PARSE_PAGE_YEAR not in page and PARSE_PAGE_MONTH not in page:
+        return
+
     directory = os.path.join(FILE_DIR, page[PARSE_PAGE_CATEGORY], str(page[PARSE_PAGE_YEAR]), page[PARSE_PAGE_MONTH],
                              page[PARSE_PAGE_FILENAME] + page[PARSE_PAGE_DUP_PREFIX])
 
@@ -238,9 +241,8 @@ def parse_page(page, debug=False):
     try:
         parse_article(url=page[PARSE_PAGE_LINK],
                       filename=page[PARSE_PAGE_FILENAME], dup_prefix=page[PARSE_PAGE_DUP_PREFIX],
-                      directory=directory, debug=debug)
+                      directory=directory, is_follow_related_links=is_follow_related_links, debug=debug)
     except Exception:
-        traceback.print_exc()
         write_error(directory=directory, error='Exception', exception=traceback.format_exc())
 
 
@@ -248,19 +250,21 @@ def init_shared(args):
     GLOBALS[GLOBAL_SAVE_PDF_COUNTER] = args
 
 
-def listbyyear(category, year, debug=False):
+def listbyyear(category, year, is_follow_related_links=True, debug=False):
     load_logo()
     year_pages = get_year_pages(category, year)
     mp_lock = mp.Value('i', 0)
 
     with mp.Pool(processes=CPUS_TO_USE, initializer=init_shared, initargs=(mp_lock,)) as p:
-        res = [p.apply_async(parse_page, args=(page,), kwds={'debug': debug}) for page in year_pages]
+        res = [p.apply_async(parse_page, args=(page,),
+                             kwds={'is_follow_related_links': is_follow_related_links, 'debug': debug}) for page in
+               year_pages]
         p.close()
         p.join()
         res = [r.get() for r in res]
 
 
-def parse_pages(urls=[], directory='', debug=False):
+def parse_pages(urls=[], directory='', is_follow_related_links=True, debug=False):
     with mp.Pool(processes=CPUS_TO_USE) as p:
         pages = []
         res = p.map_async(partial(get_page, directory=directory, dup_map=dict()), urls, callback=pages.extend)
@@ -272,7 +276,9 @@ def parse_pages(urls=[], directory='', debug=False):
     mp_lock = mp.Value('i', 0)
 
     with mp.Pool(processes=CPUS_TO_USE, initializer=init_shared, initargs=(mp_lock,)) as p:
-        res = [p.apply_async(parse_page, args=(page,), kwds={'debug': debug}) for page in pages]
+        res = [p.apply_async(parse_page, args=(page,),
+                             kwds={'is_follow_related_links': is_follow_related_links, 'debug': debug}) for page in
+               pages]
         p.close()
         p.join()
         res = [r.get() for r in res]
@@ -280,16 +286,20 @@ def parse_pages(urls=[], directory='', debug=False):
 
 def main():
     parser = argparse.ArgumentParser(prog='NAS Archival', description='Parse URL to NAS .pdf')
-    parser.add_argument('--url', dest='url',
-                        help='url of article REQUIRED 1')
     parser.add_argument('--year', dest='year', type=int,
-                        help='year of <category> articles REQUIRED 2')
+                        help='year of <category> articles REQUIRED 1')
     parser.add_argument('--category', dest='category', choices=URL_PARAM_CATEGORY,
-                        help='category of articles REQUIRED 2')
+                        help='category of articles REQUIRED 1')
     parser.add_argument('--urls', dest='urls',
-                        help='urls of articles, comma-separated REQUIRED 3')
+                        help='urls of articles, comma-separated REQUIRED 2')
+    parser.add_argument('--url', dest='url',
+                        help='url of article REQUIRED 3')
+    parser.add_argument('--follow-related-links', dest='follow-related-links',
+                        help='(optional) Follow Related Links?')
     parser.add_argument('--debug', dest='debug')
     args = vars(parser.parse_args())
+
+    is_follow_related_links = not ('follow-related-links' in args and not args['follow-related-links'])
 
     if args['year'] is not None and args['category'] is not None:
         load_logo()
@@ -298,13 +308,13 @@ def main():
         load_logo()
         debug_directory = get_debug_dir()
         init_shared(mp.Value('i', 0))
-        parse_pages(urls=[args['url']], debug=False)
+        parse_pages(urls=[args['url']], is_follow_related_links=is_follow_related_links, debug=False)
     elif args['urls'] is not None:
         load_logo()
         debug_directory = get_debug_dir()
         urls = args['urls'].split(',')
         init_shared(mp.Value('i', 0))
-        parse_pages(urls=urls, debug=False)
+        parse_pages(urls=urls, is_follow_related_links=is_follow_related_links, debug=False)
     elif args['debug'] is not None:
         load_logo()
         debug_directory = get_debug_dir()

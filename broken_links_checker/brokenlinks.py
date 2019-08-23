@@ -3,8 +3,7 @@ import subprocess
 import sys
 
 from shared.constants import FILE_DIR
-
-from shared.parse_main import parse_article, parse_all
+from shared.parse_main import parse_all
 
 sys.path.append(FILE_DIR)
 
@@ -19,6 +18,7 @@ if __name__ == '__main__':
 
 import sys
 
+
 def create_debug_dir():
     directory = os.path.join(FILE_DIR, 'debug')
 
@@ -26,6 +26,7 @@ def create_debug_dir():
         os.makedirs(directory)
 
     return directory
+
 
 # def main():
 #     parser = argparse.ArgumentParser(prog='NAS Archival', description='Parse URL to NAS .pdf')
@@ -58,5 +59,6 @@ def create_debug_dir():
 def main():
     debug_directory = create_debug_dir()
     parse_all(directory=debug_directory)
+
 
 main()

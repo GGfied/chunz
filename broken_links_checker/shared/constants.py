@@ -9,7 +9,8 @@ PARAM_PAGE = 'param_page'
 SITE_AREA_NAME = {
     'news-and-events': {
         'latest-releases': {
-            CATEGORIES: ['news-releases', 'speeches', 'parliamentary-statements', 'forum-letter-replies', 'replies-to-media-queries', 'clarification-of-issues', 'others'],
+            CATEGORIES: ['news-releases', 'speeches', 'parliamentary-statements', 'forum-letter-replies',
+                         'replies-to-media-queries', 'clarification-of-issues', 'others'],
             PARAM_CATEGORY: 'selectedCategories',
             PARAM_PAGE: 'wcm_page.MENU-latest-releases',
         },

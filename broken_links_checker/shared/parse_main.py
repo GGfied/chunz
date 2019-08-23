@@ -1,10 +1,18 @@
-import re
 import sys
 from copy import deepcopy
 
 import requests
 from lxml import html
 
+from shared.constants import URL_PARAMS, URL_PARAM_SITEAREANAME, HOME_URL, SITE_AREA_NAME, PARAM_PAGE, PARAM_CATEGORY, \
+    CATEGORIES
+from shared.parse_helpers import parse_append_hostname, parse_clean_url
+from shared.writers import write_error
+import sys
+from copy import deepcopy
+
+import requests
+from lxml import html
 from shared.constants import URL_PARAMS, URL_PARAM_SITEAREANAME, HOME_URL, SITE_AREA_NAME, PARAM_PAGE, PARAM_CATEGORY, \
     CATEGORIES
 from shared.parse_helpers import parse_append_hostname, parse_clean_url
@@ -63,7 +71,8 @@ def parse_article(link, directory=''):
 
 def parse_list(siteareaname_l1, siteareaname_l2, param_page, param_category='', selected_category='', directory=''):
     url_params = deepcopy(URL_PARAMS)
-    url_params[URL_PARAM_SITEAREANAME] = url_params[URL_PARAM_SITEAREANAME].format(l1=siteareaname_l1, l2=siteareaname_l2)
+    url_params[URL_PARAM_SITEAREANAME] = url_params[URL_PARAM_SITEAREANAME].format(l1=siteareaname_l1,
+                                                                                   l2=siteareaname_l2)
 
     if param_category is not '':
         url_params[param_category] = selected_category
@@ -94,4 +103,3 @@ def parse_all(directory=''):
             for selected_category in obj[CATEGORIES]:
                 parse_list(siteareaname_l1, siteareaname_l2, param_page=obj[PARAM_PAGE],
                            param_category=obj[PARAM_CATEGORY], selected_category=selected_category, directory=directory)
-

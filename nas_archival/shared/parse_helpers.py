@@ -4,7 +4,7 @@ import re
 from datetime import datetime
 
 import requests
-from shared.constants import SINGLE_LINE_RE, EXTRACT_DT_RE, PARSE_IMAGE_LINK, PARSE_IMAGE_CAPTION
+from shared.constants import SINGLE_LINE_RE, EXTRACT_DT_RE, PARSE_IMAGE_LINK, PARSE_IMAGE_CAPTION, DEFAULT_TIMEOUT_SECS
 
 
 def parse_cleanup(txt, dont_trim=False):
@@ -58,7 +58,7 @@ def parse_extract_img_link_caption(images):
 
 def parse_fetch_image(url, idx, filename_prefix, directory):
     image_filename = os.path.join(directory, '{}_IMG_{}.png'.format(filename_prefix, idx))
-    image = requests.get(url)
+    image = requests.get(url, timeout=DEFAULT_TIMEOUT_SECS)
 
     with open(image_filename, 'wb') as f:
         f.write(image.content)
