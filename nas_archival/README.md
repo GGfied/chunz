@@ -9,9 +9,9 @@ To generate NAS Archival .pdf and .docx from Webpage
 5. No proxy if have set before running
 
 ## How to Use
-1. Generate for year and category
+### 1. Generate for year and category
 
-### Run Script
+#### Run Script
 In Windows or Linux:
 ```
 python3 nas.py --year <year> --category <category> --follow-related-links <True/False> (optional) 
@@ -22,13 +22,13 @@ In MacOS
 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES python3 nas.py --year <year> --category <category> --follow-related-links <True/False> (optional) 
 ```
 
-### Script Parameters
+#### Script Parameters
 year - Year of pages
 category - Category of pages
 VALID CATEGORIES - news-releases, speeches, others
 (optional default is True) follow-related-links - Generate for related resources?
 
-### Output
+#### Output
 Directory: <category>/<year>/<month string>/<yyyymmdd>
 e.g. news-releases/2019/march/20190330, news-releases/2019/march/20190330_1
 
@@ -43,9 +43,9 @@ Files:
     - details.txt: Title and Link of Articles fetched
     - error.txt: Error log if its unsuccessful, have to do manual editing
 
-2. Generate for a list of urls
+### 2. Generate for a list of urls
 
-### Run Script
+#### Run Script
 In Windows or Linux:
 ```
 python3 nas.py --urls <list of urls seperated by comma> --follow-related-links <True/False> (optional) 
@@ -57,17 +57,17 @@ OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES python3 nas.py --urls <list of urls sepe
 ```
 e.g. python3 nas.py --urls url1, url2, url3
 
-#### Running a list of urls from file seperated by line breaks
+##### Running a list of urls from file seperated by line breaks
 Windows requires Linux tools can be run via Git Bash
 ```
 python3 nas.py --urls `cat <filename>|tr '\n' ','` --follow-related-links <True/False> (optional) 
 ```
 
-### Script Parameters
+#### Script Parameters
 urls - list of urls seperated by comma
 (optional default is True) follow-related-links - Generate for related resources?
 
-### Output
+#### Output
 Directory: manual/<year>/<month string>/<yyyymmdd>
 e.g. manual/2019/march/20190330, manual/2019/march/20190330_1
 
@@ -82,23 +82,24 @@ Files:
     - details.txt: Title and Link of Articles fetched
     - error.txt: Error log if its unsuccessful, have to do manual editing
 
-3. Generate for url
-### Run Script
+### 3. Generate for url
+#### Run Script
 In Windows or Linux:
 ```
 python3 nas.py --url <url> --follow-related-links <True/False> (optional) 
 ```
+
 In MacOS
 ```
 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES python3 nas.py --url <url> --follow-related-links <True/False> (optional) 
 ```
 e.g. python3 nas.py --url url1
 
-### Script Parameters
+#### Script Parameters
 url - url of article
 (optional default is True) follow-related-links - Generate for related resources?
 
-### Output
+#### Output
 Directory: manual/<year>/<month string>/<yyyymmdd>
 e.g. manual/2019/march/20190330, manual/2019/march/20190330_1
 
