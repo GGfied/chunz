@@ -6,14 +6,14 @@ from datetime import datetime
 import requests
 from lxml import html
 from shared.constants import FILE_DIR, PARSE_PAGE_CATEGORY, PARSE_PAGE_YEAR, PARSE_PAGE_FILENAME, PARSE_PAGE_LINK, \
-    PARSE_PAGE_DUP_PREFIX, PARSE_PAGE_MONTH, MONTHS, ERROR, DEFAULT_TIMEOUT_SECS
+    PARSE_PAGE_DUP_PREFIX, PARSE_PAGE_MONTH, MONTHS, ERROR, DEFAULT_TIMEOUT_SECS, PARSE_PAGE_SAVE_FOLDER
 from shared.docx_helpers import docx_get_dup_prefix
 from shared.parse_helpers import parse_clean_url, parse_append_hostname, parse_extract_datetime, parse_filename, \
     parse_is_invalid_content, parse_get_datetimestr
 from shared.writers import write_error
 
 
-def get_page_model(link, filename, category, year, month, dup_prefix=''):
+def get_page_model(link, filename, category, year, month, dup_prefix='', save_folder=''):
     return {
         PARSE_PAGE_LINK: link,
         PARSE_PAGE_FILENAME: filename,
@@ -21,10 +21,11 @@ def get_page_model(link, filename, category, year, month, dup_prefix=''):
         PARSE_PAGE_YEAR: year,
         PARSE_PAGE_MONTH: month,
         PARSE_PAGE_DUP_PREFIX: dup_prefix,
+        PARSE_PAGE_SAVE_FOLDER: save_folder,
     }
 
 
-def get_page(link, directory='', folder='manual', dup_map=dict()):
+def get_page(link, directory='', save_folder='manual', dup_map=dict()):
     print('Info Processing: {}'.format(link))
     res = re.search(r'/(\d{4})/([^/]+?)/', link)
 
@@ -58,10 +59,10 @@ def get_page(link, directory='', folder='manual', dup_map=dict()):
         dup_map[filename] = dup_map[filename] + 1
         dup_prefix = docx_get_dup_prefix(dup_map[filename])
 
-    return get_page_model(link, filename, category=folder, year=year, month=long_month, dup_prefix=dup_prefix)
+    return get_page_model(link, filename, save_folder=save_folder, category='manual', year=year, month=long_month, dup_prefix=dup_prefix)
 
 
-def get_pages(category, year, long_month, page):
+def get_pages(category, year, long_month, page, save_folder=''):
     url = 'https://www.mindef.gov.sg/web/wcm/connect/mindef/mindef-content/home'
     params = {
         'siteAreaName': 'mindef-content/home/news-and-events/latest-releases/{}/{}'.format(year, long_month),
@@ -102,13 +103,13 @@ def get_pages(category, year, long_month, page):
 
     while i < num_links and i < num_dt:
         pages.append(get_page_model(link=links[i], filename=datetimes[i], category=category,
-                                    year=year, month=long_month))
+                                    year=year, month=long_month, save_folder=save_folder))
         i += 1
 
     return pages
 
 
-def get_month_pages(category, year, long_month):
+def get_month_pages(category, year, long_month, save_folder=''):
     print('Retrieving Articles from', long_month, year)
     directory = os.path.join(FILE_DIR, category, str(year), long_month)
 
@@ -118,7 +119,7 @@ def get_month_pages(category, year, long_month):
     month_pages = []
 
     for page_num in range(1, 100000):
-        pages = get_pages(category, year, long_month, page_num)
+        pages = get_pages(category, year, long_month, page_num, save_folder=save_folder)
         if pages is None:
             break
         month_pages = month_pages + pages
@@ -127,10 +128,10 @@ def get_month_pages(category, year, long_month):
     return month_pages
 
 
-def get_year_pages(category, year):
+def get_year_pages(category, year, save_folder=''):
     year_pages = []
     with mp.Pool(processes=4) as p:
-        res = [p.apply_async(get_month_pages, args=(category, year, month_str)) for month_str in MONTHS]
+        res = [p.apply_async(get_month_pages, args=(category, year, month_str), kwds={'save_folder': save_folder}) for month_str in MONTHS]
         p.close()
         p.join()
         for month_pages_res in res:
@@ -146,7 +147,7 @@ def get_year_pages(category, year):
         if dup_count == 2:
             year_pages[i - 1][PARSE_PAGE_DUP_PREFIX] = docx_get_dup_prefix(1)
 
-    with open(os.path.join(FILE_DIR, category, str(year), 'debug-listofpages.txt'), 'w') as f:
+    with open(os.path.join(FILE_DIR, save_folder, category, str(year), 'debug-listofpages.txt'), 'w') as f:
         f.write('\r\n'.join(list(map(str, year_pages))))
 
     return year_pages

@@ -29,7 +29,7 @@ ARTICLE_TYPES_MAP = {
     MISSING_TYPE: MISSING_PREFIX,
 }
 
-URL_PARAM_CATEGORY = ['news-releases', 'speeches', 'others', 'replies-to-media-query']
+URL_PARAM_CATEGORY = ['news-releases', 'speeches', 'others']
 
 TITLE_STYLE = 'TITLE_STYLE'
 DATETIME_STYLE = 'DATETIME_STYLE'
@@ -127,6 +127,7 @@ PARSE_PAGE_CATEGORY = 'category'
 PARSE_PAGE_MONTH = 'month'
 PARSE_PAGE_YEAR = 'year'
 PARSE_PAGE_DUP_PREFIX = 'dup_prefix'
+PARSE_PAGE_SAVE_FOLDER = 'save_folder'
 
 EXT_DOCX = '.docx'
 EXT_PDF = '.pdf'

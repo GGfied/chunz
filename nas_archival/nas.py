@@ -27,7 +27,7 @@ from lxml import html
 from shared import docxtopdf
 from shared.constants import FILE_DIR, URL_PARAM_CATEGORY, GLOBAL_LOGO_FILENAME, GLOBAL_LOGO_PATH, PARSE_PAGE_CATEGORY, \
     PARSE_PAGE_YEAR, PARSE_PAGE_DUP_PREFIX, PARSE_PAGE_FILENAME, PARSE_PAGE_MONTH, PARSE_PAGE_LINK, \
-    GLOBAL_SAVE_PDF_COUNTER, CPUS_TO_USE
+    GLOBAL_SAVE_PDF_COUNTER, CPUS_TO_USE, PARSE_PAGE_SAVE_FOLDER
 
 sys.path.append(FILE_DIR)
 
@@ -187,7 +187,7 @@ def parse_page(page, is_follow_related_links=True, debug=False):
     if PARSE_PAGE_CATEGORY not in page and PARSE_PAGE_YEAR not in page and PARSE_PAGE_MONTH not in page:
         return
 
-    directory = os.path.join(FILE_DIR, page[PARSE_PAGE_CATEGORY], str(page[PARSE_PAGE_YEAR]), page[PARSE_PAGE_MONTH],
+    directory = os.path.join(FILE_DIR, page[PARSE_PAGE_SAVE_FOLDER], page[PARSE_PAGE_CATEGORY], str(page[PARSE_PAGE_YEAR]), page[PARSE_PAGE_MONTH],
                              page[PARSE_PAGE_FILENAME] + page[PARSE_PAGE_DUP_PREFIX])
 
     if not debug and os.path.exists(directory):
@@ -204,9 +204,9 @@ def parse_page(page, is_follow_related_links=True, debug=False):
         write_error(directory=directory, error='Exception', exception=traceback.format_exc())
 
 
-def listbyyear(category, year, is_follow_related_links=True, debug=False):
+def listbyyear(category, year, save_folder='', is_follow_related_links=True, debug=False):
     load_logo()
-    year_pages = get_year_pages(category, year)
+    year_pages = get_year_pages(category, year, save_folder=save_folder)
     mp_lock = mp.Value('i', 0)
 
     with mp.Pool(processes=CPUS_TO_USE, initializer=init_shared, initargs=(mp_lock,)) as p:
@@ -218,10 +218,10 @@ def listbyyear(category, year, is_follow_related_links=True, debug=False):
         res = [r.get() for r in res]
 
 
-def parse_pages(urls=[], directory='', folder='manual', is_follow_related_links=True, debug=False):
+def parse_pages(urls=[], directory='', save_folder='manual', is_follow_related_links=True, debug=False):
     with mp.Pool(processes=CPUS_TO_USE) as p:
         pages = []
-        res = p.map_async(partial(get_page, directory=directory, folder=folder, dup_map=dict()), urls, callback=pages.extend)
+        res = p.map_async(partial(get_page, directory=directory, save_folder=save_folder, dup_map=dict()), urls, callback=pages.extend)
         res.wait()
         p.close()
         p.join()
@@ -259,21 +259,22 @@ def main():
     is_debug = args['debug'] is not None
 
     if args['year'] is not None and args['category'] is not None:
+        save_folder = args['save-folder'] or 'output_by_category'
         load_logo()
-        listbyyear(category=args['category'], year=args['year'], debug=is_debug)
+        listbyyear(category=args['category'], year=args['year'], save_folder=save_folder, debug=is_debug)
     elif args['url'] is not None:
-        folder = args['save-folder'] or 'manual'
+        save_folder = args['save-folder'] or 'output_by_url'
         load_logo()
         debug_directory = get_debug_dir()
         init_shared(mp.Value('i', 0))
-        parse_pages(urls=[args['url']], folder=folder, is_follow_related_links=is_follow_related_links, debug=is_debug)
+        parse_pages(urls=[args['url']], save_folder=save_folder, is_follow_related_links=is_follow_related_links, debug=is_debug)
     elif args['urls'] is not None:
-        folder = args['save-folder'] or 'manual'
+        save_folder = args['save-folder'] or 'output_by_urls'
         load_logo()
         debug_directory = get_debug_dir()
         urls = args['urls'].split(',')
         init_shared(mp.Value('i', 0))
-        parse_pages(urls=urls, folder=folder, is_follow_related_links=is_follow_related_links, debug=is_debug)
+        parse_pages(urls=urls, save_folder=save_folder, is_follow_related_links=is_follow_related_links, debug=is_debug)
     elif is_debug:
         load_logo()
         debug_directory = get_debug_dir()
