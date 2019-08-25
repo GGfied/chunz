@@ -1,6 +1,7 @@
 import multiprocessing as mp
 import os
 import re
+from datetime import datetime
 
 import requests
 from lxml import html
@@ -73,12 +74,12 @@ def get_pages(category, year, long_month, page):
         'connectorcache': 'none',
         'wcm_page.MENU-latest-releases': page,
     }
-    page = requests.get(url, params=params, timeout=DEFAULT_TIMEOUT_SECS)
+    page_html = requests.get(url, params=params, timeout=DEFAULT_TIMEOUT_SECS)
 
-    if parse_is_invalid_content(page.content, page.status_code):
+    if parse_is_invalid_content(page_html.content, page_html.status_code):
         return None
 
-    tree = html.fromstring(page.content)
+    tree = html.fromstring(page_html.content)
 
     links = tree.xpath('//a[@class="news-event-item-link"]/@href')
     links = list(map(parse_clean_url, links))
@@ -90,6 +91,12 @@ def get_pages(category, year, long_month, page):
 
     num_links = len(links)
     num_dt = len(datetimes)
+    month_num = datetime.strptime(long_month, '%B').strftime('%m')
+    yaer_month_prefix = '{}{}'.format(year, month_num)
+
+    if page == 1 and num_dt > 0 and not str(datetimes[0]).startswith(str(yaer_month_prefix)):
+        return None
+
     i = 0
     pages = []
 
