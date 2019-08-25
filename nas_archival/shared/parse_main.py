@@ -130,9 +130,11 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
 
     if not filename:
         filename = parse_filename(datetime_str)
+
     write_debug(directory, msg='Filename: {}'.format(filename))
     filename_prefix = docx_get_filename_prefix(filename, article_type_prefix, dup_prefix=dup_prefix)
     write_debug(directory, msg='Filename Prefix: {}'.format(filename))
+
     if filename_prefix in filename_to_dupcount_map:
         dup_count = filename_to_dupcount_map[filename_prefix]
         filename_to_dupcount_map[filename_prefix] += 1

@@ -194,7 +194,6 @@ def docx_build_body(body, doc=None,
             before_run.add_break(WD_BREAK.PAGE)
         elif tag == IMG_TAG:
             image_link = parse_append_hostname(child_ele.attrib[SRC_ATTRIB]) if SRC_ATTRIB in child_ele.attrib else ''
-            print(image_link)
             inline_img_idx = inline_img_idx_obj[INLINE_IMAGE_IDX] if INLINE_IMAGE_IDX in inline_img_idx_obj else 0
             image_filename = parse_fetch_image(url=image_link, idx=docx_get_inline_image_prefix(inline_img_idx),
                                                directory=directory,

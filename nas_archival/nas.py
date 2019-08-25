@@ -179,6 +179,10 @@ def get_debug_dir():
     return os.path.join(FILE_DIR, 'debug')
 
 
+def init_shared(args):
+    GLOBALS[GLOBAL_SAVE_PDF_COUNTER] = args
+
+
 def parse_page(page, is_follow_related_links=True, debug=False):
     if PARSE_PAGE_CATEGORY not in page and PARSE_PAGE_YEAR not in page and PARSE_PAGE_MONTH not in page:
         return
@@ -198,10 +202,6 @@ def parse_page(page, is_follow_related_links=True, debug=False):
                       directory=directory, is_follow_related_links=is_follow_related_links, debug=debug)
     except Exception:
         write_error(directory=directory, error='Exception', exception=traceback.format_exc())
-
-
-def init_shared(args):
-    GLOBALS[GLOBAL_SAVE_PDF_COUNTER] = args
 
 
 def listbyyear(category, year, is_follow_related_links=True, debug=False):
