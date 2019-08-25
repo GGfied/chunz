@@ -194,6 +194,7 @@ def docx_build_body(body, doc=None,
             before_run.add_break(WD_BREAK.PAGE)
         elif tag == IMG_TAG:
             image_link = parse_append_hostname(child_ele.attrib[SRC_ATTRIB]) if SRC_ATTRIB in child_ele.attrib else ''
+            print(image_link)
             inline_img_idx = inline_img_idx_obj[INLINE_IMAGE_IDX] if INLINE_IMAGE_IDX in inline_img_idx_obj else 0
             image_filename = parse_fetch_image(url=image_link, idx=docx_get_inline_image_prefix(inline_img_idx),
                                                directory=directory,
@@ -246,7 +247,7 @@ def docx_build_body(body, doc=None,
         is_next_tag_req_new_para = is_not_last_child and next_tag not in REQ_NEW_PARA_TAGS
 
         if (after_text is not '' or is_next_tag_req_new_para) and tag in REQ_NEW_PARA_TAGS:
-            write_debug(directory=directory, msg='AFTER CHILDREN - COPY PARA & RUN')
+            write_debug(directory=directory, msg='AFTER CHILDREN - COPY PARA & RUN: {}, {}, {}'.format(tag, next_tag, after_text))
             paragraph = docx_copy_paragraph(doc, paragraph, para_style=parent_para_style)
             run = docx_copy_run(paragraph, run, text=after_text, run_style=parent_run_style)
 

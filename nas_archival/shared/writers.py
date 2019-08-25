@@ -4,7 +4,7 @@ from shared.constants import FILE_DIR
 
 
 def write_error(directory=FILE_DIR, error='', exception=None, filename='error.txt'):
-    errormsg = '{}{}\r\n'.format(error, '' if exception is None else '_' + str(exception))
+    errormsg = '{}{}\r\n'.format(error, '' if exception is None else ', Exception: ' + str(exception))
 
     with open(os.path.join(directory, filename), 'a') as f:
         print(errormsg)
@@ -12,7 +12,7 @@ def write_error(directory=FILE_DIR, error='', exception=None, filename='error.tx
 
 
 def write_debug(directory=FILE_DIR, msg='', exception=None, filename='debug.txt'):
-    debugmsg = '{}{}\r\n'.format(msg, '' if exception is None else '_' + str(exception))
+    debugmsg = '{}{}\r\n'.format(msg, '' if exception is None else ', Exception: ' + str(exception))
 
     with open(os.path.join(directory, filename), 'a') as f:
         f.write(debugmsg)

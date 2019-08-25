@@ -27,13 +27,23 @@ DISPLAY_HEADERS = OUTPUT_HEADERS[:-1] \
                   + list(map(lambda v: '{} 7 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \
                   + list(map(lambda v: '{} 8 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \
                   + list(map(lambda v: '{} 9 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1]))
+SUMMARY_DISPLAY_HEADERS = ['Type of record* (S=Speech, PR=Press Release, FS=Fact Sheet)',
+                           'Title of Speech/Press Release/Fact Sheet',
+                           'Date of Press Release or Speech or FS dd mmm yyyy',
+                           'NR, FS and Speeches (Filename) MINDEF_yyyymmddNNN.pdf',
+                           'Related Factsheets to PR (Filename) MINDEF_yyyymmddNNN.pdf']
+SUMMARY_OUTPUT_HEADERS = ['Article Type',
+                           'Title',
+                           'DateTime',
+                           'Save Filename',
+                           'Related']
 
 
 def merge_details_files(root_dir):
     output = []
 
     for r, d, f in os.walk(root_dir):
-        details_files = list(filter(lambda v: v == 'details.txt', f))
+        details_files = list(filter(lambda v: v == 'debug.txt', f))
 
         for df in details_files:
             full_df = os.path.join(r, df)
@@ -65,11 +75,24 @@ def transform_to_output(merged_file):
         category = res.group(1)
 
         if category not in HEADERS:
-            if not re.search('INFO BUILD BODY', category):
+            if not re.search('INFO BUILD BODY|https|Fact Sheet', category):
                 print(filename, 'Invalid Header: ', category)
             continue
 
         content = re.sub(r'"', '""', str(res.group(2)))
+
+        if category == 'Article Type':
+            if '001' in content:
+                content = 'NR'
+            elif '002' in content:
+                content = 'S'
+            elif '003' in content:
+                content = 'FS'
+            else:
+                content = 'UNKNOWN'
+
+        if category == 'Save Filename':
+            content = re.sub(r'[.]docx', '.pdf', content)
 
         if category == START_HEADER:
             output.append(json_obj)
@@ -93,18 +116,22 @@ def transform_to_output(merged_file):
     return output
 
 
-def jsontocsvstr(json, ignore_fields=[]):
+def jsontocsvstr(json, req_headers=OUTPUT_HEADERS, ignore_fields=[], is_expand_related=True):
     csv = []
 
-    for h in OUTPUT_HEADERS:
+    for h in req_headers:
         if h in ignore_fields:
             continue
 
         try:
             if h == RELATED:
                 if RELATED in json:
-                    for r in json[RELATED]:
-                        csv.extend(jsontocsvstr(r, ignore_fields=[START_HEADER]).split(','))
+                    if is_expand_related:
+                        for r in json[RELATED]:
+                            csv.extend(jsontocsvstr(r, req_headers=req_headers, ignore_fields=[START_HEADER], is_expand_related=is_expand_related).split(','))
+                    else:
+                        csv.append('"'+'\r\n'.join([r['Save Filename'] for r in json[RELATED]])+'"')
+
             else:
                 strval = str(json[h])
                 csv.append("\"{}\"".format(strval))
@@ -122,15 +149,19 @@ def jsontocsvstr(json, ignore_fields=[]):
     return ','.join(csv)
 
 
-def write_to_csv(filename='', transformed_output=[]):
+def write_to_csv(filename='', transformed_output=[], display_headers=DISPLAY_HEADERS, req_headers=OUTPUT_HEADERS, is_expand_related=True):
     with open(filename, 'w') as wf:
-        wf.write(','.join(list(map(lambda v: "\"{}\"".format(v), DISPLAY_HEADERS))))
+        wf.write(','.join(list(map(lambda v: "\"{}\"".format(v), display_headers))))
         sorted_list = sorted(transformed_output, key=lambda v: int(v['Filename']) if 'Filename' in v else -1)
-        csvstr_list = list(map(jsontocsvstr, sorted_list))
+        csvstr_list = []
+
+        for l in sorted_list:
+            csvstr_list.append(jsontocsvstr(l, req_headers=req_headers, is_expand_related=is_expand_related))
+
         wf.write('\r\n'.join(csvstr_list))
 
 
-def main(root_dir, output_csv='outputtocsv_results.csv'):
+def main(root_dir, category, output_csv='outputtocsv_results.csv'):
     try:
         os.remove(os.path.join(FILE_DIR, ERROR_FILENAME))
     except FileNotFoundError:
@@ -138,23 +169,33 @@ def main(root_dir, output_csv='outputtocsv_results.csv'):
 
     merged_file = merge_details_files(root_dir)
     transformed_output = transform_to_output(merged_file)
-    output_filename = os.path.join(FILE_DIR, output_csv)
-    write_to_csv(filename=output_filename, transformed_output=transformed_output)
+    output_filename = os.path.join(FILE_DIR, category+'_'+output_csv)
+
+    if category == 'detailed':
+        write_to_csv(filename=output_filename, transformed_output=transformed_output)
+    elif category == 'summary':
+        write_to_csv(filename=output_filename, transformed_output=transformed_output,
+                     display_headers=SUMMARY_DISPLAY_HEADERS, req_headers=SUMMARY_OUTPUT_HEADERS, is_expand_related=False)
 
 
-if len(sys.argv) != 2:
-    print('Required 1 argument <files root directory>')
+if len(sys.argv) != 3:
+    print('Required 1 argument <files root directory> <detailed/summary>')
     sys.exit(1)
 
 files_root_dir = sys.argv[1].strip()
+output_category = sys.argv[2].strip().lower()
 
 if not os.path.exists(files_root_dir):
     print('{} Directory does not exists'.format(files_root_dir))
     sys.exit(1)
 
+if output_category not in ['detailed', 'summary']:
+    print('{} Category not in [detailed or summary]'.format(output_category))
+    sys.exit(1)
+
 files_root_dir = os.path.abspath(files_root_dir)
 
 start = time.time()
-main(files_root_dir)
+main(files_root_dir, output_category)
 end = time.time()
 print('Processing Time Taken: {} seconds'.format(end - start))

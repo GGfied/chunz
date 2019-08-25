@@ -159,53 +159,7 @@ def docx_test():
         <p>ptext bold before<b>bold</b>ptext bold after</p>\
         <p><b>asdad</b> xxx <strong>strong</strong> xxx <b>sadas</b><br />xxx<br>xxx<i>italic</i>xxx<u>underline</u>xxx<ol><li>num 1</li><li>num 2</li></ol><ul><li>bullet 1</li><li>bullet 2</li></ul></p></body></html>')
     xxxx = html.fromstring('<body>\
-    <table>\
-    <tr><td style="text-align: center">Here is it \
-    <ol><li>A</li><li>B</li></ol>\
-    After <b>Here I am</b> \
-    <div><p>asdasd</p></div>\
-    <ul><li>A</li><li>B</li></ul></td></tr>\
-    <tr><td><ul><li>A</li><li>B</li></ul></td></tr>\
-    <tr><td style="width: 402px; border-color : #696969;">\
-			<p style="text-align: center;"><em>阿興薄餅 Heng\'s Popiah</em></p>\
-			<p style="text-align: center;"><em>Roots of Rejections</em></p>\
-			<p style="text-align: center;"><em>From You to Me密切留忆</em></p>\
-			<p style="text-align: center;"><em>A Portrait of Mum</em></p>\
-			<p style="text-align: center;"><em>First Impression</em></p>\
-            AFTER TEXT\
-			</td></tr>\
-    <tr><td style="text-align: center; width: 417px; border-color : #696969;"><em><strong>Winner:</strong> Mum\'s Last Day at Work – MingEn Seafood</em></td></tr>\
-    <tr><td style="width: 650px; border-color : #696969;">\
-			<p><a href="https://www.youtube.com/watch?v=rLK8pZOP7RE" target="_blank" rel="noopener noreferrer">$ingapura</a></p>\
-			<p>A slice of life piece that observes this society through a day in life of a driver. The driver, Ah Hock, is representative of a generation in Singapore who works mainly for survival, and to provide a better living for their family.&nbsp;&nbsp; &nbsp;</p>\
-			</td></tr>\
-    <tr><td style="width: 671px; border-color : #696969;">\
-            <p>&nbsp;</p>\
-            <p>sadasd</p>\
-			<ul>\
-				<li>Competition submission period&nbsp;</li>\
-			</ul>\
-			<p style="margin-left: 40px;">- Participants can submit their competition entries via the ciNE65 website (<a href="http://www.cine65.sg" target="_blank" rel="noopener noreferrer">www.cine65.sg</a>) from 9 November 2018 till 18&nbsp; March 2019, 1200hrs.<br>\
-			<br>\
-			- A total of 113 entries – 51 under the Open Category, and 62 under the Student Category – were received.</p>\
-			</td></tr>\
-    </table>\
-    <p>\
-    How are you&nbsp;<b>dasdasdasd</b>&nbsp;sdfsdfsdfsd?\
-    How are you&nbsp;<a href="http://wwww.google.com.sg">dasdasdasd</a>&nbsp;sdfsdfsdfsd?\
-    </p>\
-    <p>\
-        <img alt="" src="/content/dam/imindef_media_library/photos/news_release/2016/jun/26jun16_nr/factsheet/thumbnail_26jun16_fs2.jpg" title="">\
-        <p>\
-            <img alt="" src="/content/dam/imindef_media_library/photos/news_release/2016/jun/26jun16_nr/factsheet/thumbnail_26jun16_fs2.jpg" title="">\
-            <p>\
-                <img alt="" src="/content/dam/imindef_media_library/photos/news_release/2016/jun/26jun16_nr/factsheet/thumbnail_26jun16_fs2.jpg" title="">\
-            </p>\
-        </p>\
-        <img alt="" src="/content/dam/imindef_media_library/photos/news_release/2016/jun/26jun16_nr/factsheet/thumbnail_26jun16_fs2.jpg" title="">\
-    </p>\
-    <img alt="" src="/content/dam/imindef_media_library/photos/news_release/2016/jun/26jun16_nr/factsheet/thumbnail_26jun16_fs2.jpg" title="">\
-    <img alt="" src="/content/dam/imindef_media_library/photos/news_release/2016/jun/26jun16_nr/factsheet/thumbnail_26jun16_fs2.jpg" title="">\
+    <div class="article">\n            <p dir="ltr">A number of online initiatives have been planned for TD 2013 to reach out to Singaporeans. Centred on this year\'s campaign theme "Total Defence - Will You Stand With Me?", this year\'s online outreach comprises three key components: "Let\'s Stand Together" photo montage, "My Friend In Deed" contest as well as a 21-Day Challenge put out by bloggers. These online activities encourage and remind the public to stand with one another in good and bad times, be it overcoming challenges or doing something good for the community. The "My Friend In Deed" contest, in particular, prompts people to appreciate those who have stood with them to achieve remarkable feats or to overcome challenges.</p>\n\n<p dir="ltr"><strong>"Let\'s Stand Together" photo montage on campaign website</strong></p>\n\n<p dir="ltr">The key engagement activity on the official campaign website (<a href="http://www.standwithme.sg" target="_blank">www.standwithme.sg</a>) is the "Let\'s Stand Together" photo montage. The public will be invited to upload pictures of themselves, with their arms outstretched. These pictures will be linked to form the longest online human chain of Singaporeans "standing together". This simple activity is a visual representation of the campaign message that we can make a difference individually and collectively when we stand together as one.</p>\n\n<p dir="ltr"><strong>"My Friend in Deed" on Facebook</strong></p>\n\n<p dir="ltr">"My Friend In Deed" invites the public to submit stories (in the form of text, photos and/or videos) about how someone has stood with them to achieve a remarkable feat or to overcome a challenge. The contest will end on 22 March 2013, and participants will stand to win attractive prizes in the "Most Inspirational Story" category or "People\'s Choice" category. See <a href="http://www.facebook.com/ConnexionSG">www.facebook.com/ConnexionSG</a>.&#160;</p>\n\n<p dir="ltr"><strong>"The TD Challenge" App on Facebook</strong></p>\n\n<p dir="ltr">Members of the public will also get the opportunity to view the profiles of the teams participating in the TD Challenge and get live updates of the event on 15 February 2013 by logging on to <a href="http://www.facebook.com/ConnexionSG">www.facebook.com/ConnexionSG</a>. For more details about the TD Challenge, please refer to the fact sheet titled "TD Challenge".&#160;</p>\n\n<p dir="ltr"><strong>21-Day Challenge</strong></p>\n\n<p dir="ltr">Bloggers such as Dr Leslie Tay (<a href="http://ieatishootipost.sg" target="_blank">ieatishootipost.sg</a>) and Faz (<a href="http://thedramadiaries.com" target="_blank">thedramadiaries.com</a>) will blog, tweet or post on Facebook a challenge a day for their readers to complete. Through this, the readers will come to understand how the things that they do, individually and collectively, can help to foster a stronger sense of community and a greater sense of cohesion among Singaporeans. The reader who has completed a minimum of 10 challenges in the most creative way will stand to win attractive prizes. The 21-Day Challenge started on 26 January 2013 and will end on 15 February 2013.</p>\n\n<p dir="ltr">The list of 7 bloggers for this 21-Day Challenge are:</p>\n\n<p dir="ltr">&#160;</p>\n\n<table border="1" dir="ltr" style="width: 500px; table-layout: fixed; word-wrap: break-word; border-collapse : collapse; border-color : #696969;">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style="overflow: hidden; width: 250px; text-align: center; border-color : #696969;"><strong>Blogger</strong></td>\n\t\t\t<td style="overflow: hidden; width: 250px; text-align: center; border-color : #696969;"><strong>Blog Address</strong></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style="overflow: hidden; width: 250px; border-color : #696969;">Dr Leslie Tay</td>\n\t\t\t<td style="overflow: hidden; width: 250px; border-color : #696969;"><a href="http://ieatishootipost.sg/" title="null" target="_blank">http://ieatishootipost.sg/</a></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style="overflow: hidden; width: 250px; border-color : #696969;">Faz</td>\n\t\t\t<td style="overflow: hidden; width: 250px; border-color : #696969;"><a href="http://thedramadiaries.com/" target="_blank">http://thedramadiaries.com/</a></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style="overflow: hidden; width: 250px; border-color : #696969;">Edmund Tay</td>\n\t\t\t<td style="overflow: hidden; width: 250px; border-color : #696969;"><a href="http://edunloaded.com/">http://edunloaded.com/</a></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style="overflow: hidden; width: 250px; border-color : #696969;">Diah</td>\n\t\t\t<td style="overflow: hidden; width: 250px; border-color : #696969;"><a href="http://etrangle.net/">http://etrangle.net/</a></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style="overflow: hidden; width: 250px; border-color : #696969;">Stephanie</td>\n\t\t\t<td style="overflow: hidden; width: 250px; border-color : #696969;"><a href="http://stooffi.wordpress.com/">http://stooffi.wordpress.com/</a></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style="overflow: hidden; width: 250px; border-color : #696969;">Jemimah</td>\n\t\t\t<td style="overflow: hidden; width: 250px; border-color : #696969;"><a href="http://jemmawei.com" target="_blank">jemmawei.com</a></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style="overflow: hidden; width: 250px; border-color : #696969;">Que</td>\n\t\t\t<td style="overflow: hidden; width: 250px; border-color : #696969;"><a href="http://www.rynaque.com">www.rynaque.com</a></td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p dir="ltr">&#160;</p>\n\n        </div>\
     </body>')
     xxxxx = html.fromstring(
         '<body><table><tr><td><p style="text-align: center;"><em>阿興薄餅 Heng\'s Popiah</em></p><p style="text-align: center;"><em>阿興薄餅 Heng\'s Popiah</em></p></td></tr></table></body>')
@@ -213,7 +167,6 @@ def docx_test():
     doc = Document()
     docx_init_styles(doc.styles)
     docx_build_body(body, doc, directory=os.path.join(FILE_DIR, 'debug'), filename_prefix='test')
-    doc.add_picture('debug/test.png')
     doc.save('debug/test.docx')
     docxtopdf.convert_to('debug', 'debug/test.docx')
 
@@ -233,10 +186,11 @@ def parse_page(page, is_follow_related_links=True, debug=False):
     directory = os.path.join(FILE_DIR, page[PARSE_PAGE_CATEGORY], str(page[PARSE_PAGE_YEAR]), page[PARSE_PAGE_MONTH],
                              page[PARSE_PAGE_FILENAME] + page[PARSE_PAGE_DUP_PREFIX])
 
-    if os.path.exists(directory):
+    if not debug and os.path.exists(directory):
         shutil.rmtree(directory)
 
-    os.makedirs(directory)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
     try:
         parse_article(url=page[PARSE_PAGE_LINK],
@@ -264,10 +218,10 @@ def listbyyear(category, year, is_follow_related_links=True, debug=False):
         res = [r.get() for r in res]
 
 
-def parse_pages(urls=[], directory='', is_follow_related_links=True, debug=False):
+def parse_pages(urls=[], directory='', folder='manual', is_follow_related_links=True, debug=False):
     with mp.Pool(processes=CPUS_TO_USE) as p:
         pages = []
-        res = p.map_async(partial(get_page, directory=directory, dup_map=dict()), urls, callback=pages.extend)
+        res = p.map_async(partial(get_page, directory=directory, folder=folder, dup_map=dict()), urls, callback=pages.extend)
         res.wait()
         p.close()
         p.join()
@@ -296,26 +250,31 @@ def main():
                         help='url of article REQUIRED 3')
     parser.add_argument('--follow-related-links', dest='follow-related-links',
                         help='(optional) Follow Related Links?')
+    parser.add_argument('--save-folder', dest='save-folder',
+                        help='(optional) Save Folder for url(s) default is manual')
     parser.add_argument('--debug', dest='debug')
     args = vars(parser.parse_args())
 
-    is_follow_related_links = not ('follow-related-links' in args and not args['follow-related-links'])
+    is_follow_related_links = args['follow-related-links'] != 'False'
+    is_debug = args['debug'] is not None
 
     if args['year'] is not None and args['category'] is not None:
         load_logo()
-        listbyyear(category=args['category'], year=args['year'])
+        listbyyear(category=args['category'], year=args['year'], debug=is_debug)
     elif args['url'] is not None:
+        folder = args['save-folder'] or 'manual'
         load_logo()
         debug_directory = get_debug_dir()
         init_shared(mp.Value('i', 0))
-        parse_pages(urls=[args['url']], is_follow_related_links=is_follow_related_links, debug=False)
+        parse_pages(urls=[args['url']], folder=folder, is_follow_related_links=is_follow_related_links, debug=is_debug)
     elif args['urls'] is not None:
+        folder = args['save-folder'] or 'manual'
         load_logo()
         debug_directory = get_debug_dir()
         urls = args['urls'].split(',')
         init_shared(mp.Value('i', 0))
-        parse_pages(urls=urls, is_follow_related_links=is_follow_related_links, debug=False)
-    elif args['debug'] is not None:
+        parse_pages(urls=urls, folder=folder, is_follow_related_links=is_follow_related_links, debug=is_debug)
+    elif is_debug:
         load_logo()
         debug_directory = get_debug_dir()
         docx_test()

@@ -38,9 +38,53 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
 
     tree = html.fromstring(page_content)
 
+    if debug:
+        titles = tree.xpath('//div[@class="article-detail__heading"]/div[contains(@class, "title")]/text()')
+        title = parse_cleanup(titles[0])
+
+        datetime_str = parse_get_datetimestr(tree)
+
+        main = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]')
+
+        if len(main) == 0:
+            return
+
+        main = main[0]
+        children = main.getchildren()
+        num_children = len(children)
+
+        others_text = main.xpath('p/a')
+        if len(others_text) == 0:
+            others_text = main.xpath('ul/li/a')
+            if len(others_text) > 0:
+                print('missed out related text ul-li-a', title, datetime_str, url)
+            elif num_children > 0:
+                print('missed out unhandled related text', title, datetime_str, url, etree.tostring(main))
+        others_text = list(map(lambda v: ''.join(v.itertext()), others_text))
+        others_text = list(map(parse_cleanup, others_text))
+
+        others_link = main.xpath('p/a/@href')
+        if len(others_link) == 0:
+            others_link = main.xpath('ul/li/a/@href')
+            if len(others_link) > 0:
+                print('missed out related link ul-li-a-@href', title, datetime_str, url)
+            elif num_children > 0:
+                print('missed out unhandled related link', title, datetime_str, url, etree.tostring(main))
+        others_link = list(map(parse_clean_url, others_link))
+        others_link = list(map(parse_append_hostname, others_link))
+
+        visited_map[url] = True
+        for i in range(len(others_link)):
+            others_link[i] = parse_article(url=others_link[i], directory=directory, visited_map=visited_map,
+                                           dup_prefix=dup_prefix, filename_to_dupcount_map=filename_to_dupcount_map,
+                                           is_follow_related_links=is_follow_related_links, debug=debug)
+
+        return
+
     titles = tree.xpath('//div[@class="article-detail__heading"]/div[contains(@class, "title")]/text()')
     title = parse_cleanup(titles[0])
-    write_details(directory, url, title)
+    if not debug:
+        write_details(directory, url, title)
 
     article_types = tree.xpath(
         '//div[@class="article-detail__heading"]/div[@class="article-info"]/span[contains(@class, "item-label")]/text()')
@@ -61,10 +105,12 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
 
     if is_follow_related_links:
         others_text = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/p/a')
+        others_text = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/ul/li/a') if len(others_text) == 0 else others_text
         others_text = list(map(lambda v: ''.join(v.itertext()), others_text))
         others_text = list(map(parse_cleanup, others_text))
 
         others_link = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/p/a/@href')
+        others_link = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/ul/li/a/@href') if len(others_link) == 0 else others_link
         others_link = list(map(parse_clean_url, others_link))
         others_link = list(map(parse_append_hostname, others_link))
     else:
@@ -102,7 +148,7 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
     for i in range(len(others_link)):
         others_link[i] = parse_article(url=others_link[i], directory=directory, visited_map=visited_map,
                                        dup_prefix=dup_prefix, filename_to_dupcount_map=filename_to_dupcount_map,
-                                       is_follow_related_links=is_follow_related_links)
+                                       is_follow_related_links=is_follow_related_links, debug=debug)
 
     docx_build(save_filename, filename_prefix, directory, title, datetime_str, images, body,
                others_text=others_text, others_link=others_link)

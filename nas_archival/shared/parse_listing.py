@@ -24,7 +24,7 @@ def get_page_model(link, filename, category, year, month, dup_prefix=''):
     }
 
 
-def get_page(link, directory='', dup_map=dict()):
+def get_page(link, directory='', folder='manual', dup_map=dict()):
     print('Info Processing: {}'.format(link))
     res = re.search(r'/(\d{4})/([^/]+?)/', link)
 
@@ -58,7 +58,7 @@ def get_page(link, directory='', dup_map=dict()):
         dup_map[filename] = dup_map[filename] + 1
         dup_prefix = docx_get_dup_prefix(dup_map[filename])
 
-    return get_page_model(link, filename, category='manual', year=year, month=long_month, dup_prefix=dup_prefix)
+    return get_page_model(link, filename, category=folder, year=year, month=long_month, dup_prefix=dup_prefix)
 
 
 def get_pages(category, year, long_month, page):
