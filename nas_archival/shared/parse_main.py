@@ -103,19 +103,15 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
 
     body = tree.xpath('//div[@class="row"]//div[@class="article"]')[0]
 
-    if is_follow_related_links:
-        others_text = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/p/a')
-        others_text = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/ul/li/a') if len(others_text) == 0 else others_text
-        others_text = list(map(lambda v: ''.join(v.itertext()), others_text))
-        others_text = list(map(parse_cleanup, others_text))
+    others_text = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/p/a')
+    others_text = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/ul/li/a') if len(others_text) == 0 else others_text
+    others_text = list(map(lambda v: ''.join(v.itertext()), others_text))
+    others_text = list(map(parse_cleanup, others_text))
 
-        others_link = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/p/a/@href')
-        others_link = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/ul/li/a/@href') if len(others_link) == 0 else others_link
-        others_link = list(map(parse_clean_url, others_link))
-        others_link = list(map(parse_append_hostname, others_link))
-    else:
-        others_text = []
-        others_link = []
+    others_link = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/p/a/@href')
+    others_link = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/ul/li/a/@href') if len(others_link) == 0 else others_link
+    others_link = list(map(parse_clean_url, others_link))
+    others_link = list(map(parse_append_hostname, others_link))
 
     article_type_prefix = ARTICLE_TYPES_MAP[article_type]
 
@@ -147,10 +143,11 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
     save_filename_no_ext = re.sub(EXT_DOCX + '$', '', save_filename)
     visited_map[url] = save_filename_no_ext
 
-    for i in range(len(others_link)):
-        others_link[i] = parse_article(url=others_link[i], directory=directory, visited_map=visited_map,
-                                       dup_prefix=dup_prefix, filename_to_dupcount_map=filename_to_dupcount_map,
-                                       is_follow_related_links=is_follow_related_links, debug=debug)
+    if is_follow_related_links:
+        for i in range(len(others_link)):
+            others_link[i] = parse_article(url=others_link[i], directory=directory, visited_map=visited_map,
+                                           dup_prefix=dup_prefix, filename_to_dupcount_map=filename_to_dupcount_map,
+                                           is_follow_related_links=is_follow_related_links, debug=debug)
 
     docx_build(save_filename, filename_prefix, directory, title, datetime_str, images, body,
                others_text=others_text, others_link=others_link)

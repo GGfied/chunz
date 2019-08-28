@@ -147,7 +147,12 @@ def get_year_pages(category, year, save_folder=''):
         if dup_count == 2:
             year_pages[i - 1][PARSE_PAGE_DUP_PREFIX] = docx_get_dup_prefix(1)
 
-    with open(os.path.join(FILE_DIR, save_folder, category, str(year), 'debug-listofpages.txt'), 'w') as f:
+    year_pages_debug_path = os.path.join(FILE_DIR, save_folder, category, str(year)) 
+
+    if not os.path.exists(year_pages_debug_path):
+        os.makedirs(year_pages_debug_path)
+
+    with open(os.path.join(year_pages_debug_path, 'debug-listofpages.txt'), 'w') as f:
         f.write('\r\n'.join(list(map(str, year_pages))))
 
     return year_pages

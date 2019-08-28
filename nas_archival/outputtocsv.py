@@ -179,7 +179,7 @@ def main(root_dir, category, output_csv='outputtocsv_results.csv'):
 
 
 if len(sys.argv) != 3:
-    print('Required 1 argument <files root directory> <detailed/summary>')
+    print('Required 2 arguments <files root directory> <detailed/summary>')
     sys.exit(1)
 
 files_root_dir = sys.argv[1].strip()

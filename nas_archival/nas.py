@@ -1,3 +1,4 @@
+# encoding: utf-8
 import argparse
 import multiprocessing as mp
 import os
@@ -248,15 +249,16 @@ def main():
                         help='urls of articles, comma-separated REQUIRED 2')
     parser.add_argument('--url', dest='url',
                         help='url of article REQUIRED 3')
-    parser.add_argument('--follow-related-links', dest='follow-related-links',
-                        help='(optional) Follow Related Links?')
+    parser.add_argument('--dont-follow-related-links', dest='follow-related-links', action='store_false',
+                        help='(optional) DO NOT  Follow Related Links')
     parser.add_argument('--save-folder', dest='save-folder',
                         help='(optional) Save Folder for url(s) default is manual')
-    parser.add_argument('--debug', dest='debug')
+    parser.add_argument('--debug', dest='debug', action='store_true')
     args = vars(parser.parse_args())
 
-    is_follow_related_links = args['follow-related-links'] != 'False'
-    is_debug = args['debug'] is not None
+    is_follow_related_links = args['follow-related-links']
+    is_debug = args['debug']
+    print(is_follow_related_links)
 
     if args['year'] is not None and args['category'] is not None:
         save_folder = args['save-folder'] or 'output_by_category'
