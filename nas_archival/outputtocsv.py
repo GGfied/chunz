@@ -7,36 +7,57 @@ import traceback
 from shared.constants import FILE_DIR
 from shared.writers import write_error
 
-RELATED = 'Related'
-SAVE_PATH = 'Save Path'
-START_HEADER = SAVE_PATH
-END_ARTICLE_HEADER = 'Save Filename'
-ERROR_FILENAME = 'outputtocsv_errors.txt'
+RUN_DETAILED = 'detailed'
+RUN_SUMMARY = 'summary'
+RUN_OPTIONS = [RUN_DETAILED, RUN_SUMMARY]
 
-HEADERS = [SAVE_PATH, 'Article Type', 'URL', 'Title', 'DateTime', 'Body', 'Images', 'Others Text', 'Others Link',
-           'Filename', 'Filename Prefix', 'Save Filename', RELATED]
-OUTPUT_HEADERS = ['Save Path', 'Article Type', 'URL', 'Title', 'DateTime', 'Filename', 'Filename Prefix',
-                  'Save Filename', RELATED]
+RELATED_ARTICLE_TYPES = ['FS', 'S']
+
+RELATED_HEADER = 'Related'
+SAVE_PATH_HEADER = 'Save Path'
+SAVE_FILENAME_HEADER = 'Save Filename'
+ERROR_FILENAME = 'outputtocsv_errors.txt'
+ARTICLE_TYPE_HEADER = 'Article Type'
+URL_HEADER = 'URL'
+TITLE_HEADER = 'Title'
+DATETIME_HEADER = 'DateTime'
+FILENAME_HEADER = 'Filename'
+FILENAME_PREFIX_HEADER = 'Filename Prefix'
+IS_POSSIBLE_DUP_HEADER = 'Is Possible Duplicate'
+PDF_FILES_HEADER = 'PDF Files'
+START_HEADER = SAVE_PATH_HEADER
+END_ARTICLE_HEADER = SAVE_FILENAME_HEADER
+IS_DUPLICATE_HEADER = 'Is Duplicate'
+COMBINER = '~~~~~~~~~~~~~~~~~~~~~~~~~'
+
+HEADERS = [PDF_FILES_HEADER, SAVE_PATH_HEADER, ARTICLE_TYPE_HEADER, URL_HEADER, TITLE_HEADER, DATETIME_HEADER, 'Body', 'Images', 'Others Text', 'Others Link',
+           FILENAME_HEADER, FILENAME_PREFIX_HEADER, SAVE_FILENAME_HEADER, RELATED_HEADER]
+OUTPUT_HEADERS = [SAVE_PATH_HEADER, ARTICLE_TYPE_HEADER, URL_HEADER, TITLE_HEADER, DATETIME_HEADER,
+                  FILENAME_HEADER, FILENAME_PREFIX_HEADER, SAVE_FILENAME_HEADER, RELATED_HEADER]
 DISPLAY_HEADERS = OUTPUT_HEADERS[:-1] \
-                  + list(map(lambda v: '{} 1 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \
-                  + list(map(lambda v: '{} 2 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \
-                  + list(map(lambda v: '{} 3 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \
-                  + list(map(lambda v: '{} 4 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \
-                  + list(map(lambda v: '{} 5 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \
-                  + list(map(lambda v: '{} 6 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \
-                  + list(map(lambda v: '{} 7 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \
-                  + list(map(lambda v: '{} 8 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \
-                  + list(map(lambda v: '{} 9 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1]))
+                  + list(map(lambda v: '{} 1 {}'.format(RELATED_HEADER, v), OUTPUT_HEADERS[1:-1])) \
+                  + list(map(lambda v: '{} 2 {}'.format(RELATED_HEADER, v), OUTPUT_HEADERS[1:-1])) \
+                  + list(map(lambda v: '{} 3 {}'.format(RELATED_HEADER, v), OUTPUT_HEADERS[1:-1])) \
+                  + list(map(lambda v: '{} 4 {}'.format(RELATED_HEADER, v), OUTPUT_HEADERS[1:-1])) \
+                  + list(map(lambda v: '{} 5 {}'.format(RELATED_HEADER, v), OUTPUT_HEADERS[1:-1])) \
+                  + list(map(lambda v: '{} 6 {}'.format(RELATED_HEADER, v), OUTPUT_HEADERS[1:-1])) \
+                  + list(map(lambda v: '{} 7 {}'.format(RELATED_HEADER, v), OUTPUT_HEADERS[1:-1])) \
+                  + list(map(lambda v: '{} 8 {}'.format(RELATED_HEADER, v), OUTPUT_HEADERS[1:-1])) \
+                  + list(map(lambda v: '{} 9 {}'.format(RELATED_HEADER, v), OUTPUT_HEADERS[1:-1]))
 SUMMARY_DISPLAY_HEADERS = ['Type of record* (S=Speech, PR=Press Release, FS=Fact Sheet)',
                            'Title of Speech/Press Release/Fact Sheet',
                            'Date of Press Release or Speech or FS dd mmm yyyy',
                            'NR, FS and Speeches (Filename) MINDEF_yyyymmddNNN.pdf',
-                           'Related Factsheets to PR (Filename) MINDEF_yyyymmddNNN.pdf']
-SUMMARY_OUTPUT_HEADERS = ['Article Type',
-                           'Title',
-                           'DateTime',
-                           'Save Filename',
-                           'Related']
+                           'Related Resources to Record (Filename) MINDEF_yyyymmddNNN.pdf',
+                           'Related Resources in Folder to Record (Filename) MINDEF_yyyymmddNNN.pdf',
+                           IS_DUPLICATE_HEADER]
+SUMMARY_OUTPUT_HEADERS = [ARTICLE_TYPE_HEADER,
+                           TITLE_HEADER,
+                           DATETIME_HEADER,
+                           SAVE_FILENAME_HEADER,
+                           RELATED_HEADER,
+                           PDF_FILES_HEADER,
+                           IS_DUPLICATE_HEADER]
 
 
 def merge_details_files(root_dir):
@@ -47,10 +68,21 @@ def merge_details_files(root_dir):
 
         for df in details_files:
             full_df = os.path.join(r, df)
+            parent_dir = os.path.dirname(full_df)
+            pdffiles = list(filter(lambda v: v.endswith('.pdf'), os.listdir(parent_dir)))
+            pdffiles.sort()
+            pdffiles_str = COMBINER.join(pdffiles)
 
             with open(full_df, 'r') as f:
-                output.append('{}: {}'.format(START_HEADER, full_df))
-                output = output + f.readlines()
+                foutput = []
+                foutput.append('{}: {}'.format(START_HEADER, full_df))
+                foutput.append('{}: {}'.format(PDF_FILES_HEADER, pdffiles_str))
+                foutput = foutput + f.readlines()
+
+                if 'news-releases' in full_df:
+                    output = foutput + output
+                else:
+                    output = output + foutput
 
     return output
 
@@ -61,6 +93,7 @@ def transform_to_output(merged_file):
     filename = ''
     json_obj = dict()
     output = []
+    dup_related_checker = dict()
 
     for line in merged_file:
 
@@ -75,13 +108,13 @@ def transform_to_output(merged_file):
         category = res.group(1)
 
         if category not in HEADERS:
-            if not re.search('INFO BUILD BODY|https|Fact Sheet', category):
+            if not re.search('INFO BUILD BODY|https|Fact Sheet|AFTER CHILDREN - COPY PARA & RUN', category):
                 print(filename, 'Invalid Header: ', category)
             continue
 
         content = re.sub(r'"', '""', str(res.group(2)))
 
-        if category == 'Article Type':
+        if category == ARTICLE_TYPE_HEADER:
             if '001' in content:
                 content = 'NR'
             elif '002' in content:
@@ -90,23 +123,63 @@ def transform_to_output(merged_file):
                 content = 'FS'
             else:
                 content = 'UNKNOWN'
-
-        if category == 'Save Filename':
+        elif category == SAVE_FILENAME_HEADER:
             content = re.sub(r'[.]docx', '.pdf', content)
 
+            if not is_more_res:
+                if PDF_FILES_HEADER in json_obj:
+                    json_obj[PDF_FILES_HEADER] = re.sub(content + '\r?\n?', '', json_obj[PDF_FILES_HEADER])
+        elif category == PDF_FILES_HEADER:
+            content = re.sub(COMBINER, '\r\n', content)
+
         if category == START_HEADER:
+            dup_checker = dict()
             output.append(json_obj)
             json_obj = dict()
-            json_obj[RELATED] = []
+            json_obj[RELATED_HEADER] = []
             is_more_res = False
             filename = content
 
         if is_more_res:
-            if category == 'URL':
-                json_obj[RELATED].append(dict())
-            json_obj[RELATED][-1][category] = content
+            if category == URL_HEADER:
+                json_obj[RELATED_HEADER].append(dict())
+
+            json_obj[RELATED_HEADER][-1][category] = content
+
+            if category == TITLE_HEADER:
+                if content in dup_checker:
+                    json_obj[RELATED_HEADER][-1][IS_POSSIBLE_DUP_HEADER] = True
+                else:
+                    dup_checker[content] = True
+
+            zz = json_obj[RELATED_HEADER][-1]
+            if ARTICLE_TYPE_HEADER in zz and TITLE_HEADER in zz and DATETIME_HEADER in zz:
+                articletype = zz[ARTICLE_TYPE_HEADER]
+                datetime = zz[DATETIME_HEADER]
+                title = zz[TITLE_HEADER]
+
+                if articletype not in dup_related_checker:
+                    dup_related_checker[articletype] = dict()
+                if datetime not in dup_related_checker[articletype]:
+                    dup_related_checker[articletype][datetime] = dict()
+                dup_related_checker[articletype][datetime][title] = True
         else:
             json_obj[category] = content
+
+            if category == TITLE_HEADER:
+                dup_checker[content] = True
+
+            zz = json_obj
+            if ARTICLE_TYPE_HEADER in zz and TITLE_HEADER in zz and DATETIME_HEADER in zz:
+                articletype = zz[ARTICLE_TYPE_HEADER]
+                datetime = zz[DATETIME_HEADER]
+                title = zz[TITLE_HEADER]
+
+                if articletype not in dup_related_checker:
+                    dup_related_checker[articletype] = dict()
+                if datetime not in dup_related_checker[articletype]:
+                    dup_related_checker[articletype][datetime] = dict()
+                json_obj[IS_DUPLICATE_HEADER] = 'Yes' if title in dup_related_checker[articletype][datetime] else 'No'
 
         if not is_more_res and category == END_ARTICLE_HEADER:
             is_more_res = True
@@ -124,13 +197,13 @@ def jsontocsvstr(json, req_headers=OUTPUT_HEADERS, ignore_fields=[], is_expand_r
             continue
 
         try:
-            if h == RELATED:
-                if RELATED in json:
+            if h == RELATED_HEADER:
+                if RELATED_HEADER in json:
                     if is_expand_related:
-                        for r in json[RELATED]:
+                        for r in json[RELATED_HEADER]:
                             csv.extend(jsontocsvstr(r, req_headers=req_headers, ignore_fields=[START_HEADER], is_expand_related=is_expand_related).split(','))
                     else:
-                        csv.append('"'+'\r\n'.join([r['Save Filename'] for r in json[RELATED]])+'"')
+                        csv.append('"'+'\r\n'.join([r[SAVE_FILENAME_HEADER] + (': POSSIBLE DUPLICATE' if IS_POSSIBLE_DUP_HEADER in r else '') for r in json[RELATED_HEADER]])+'"')
 
             else:
                 strval = str(json[h])
@@ -189,7 +262,7 @@ if not os.path.exists(files_root_dir):
     print('{} Directory does not exists'.format(files_root_dir))
     sys.exit(1)
 
-if output_category not in ['detailed', 'summary']:
+if output_category not in RUN_OPTIONS:
     print('{} Category not in [detailed or summary]'.format(output_category))
     sys.exit(1)
 
