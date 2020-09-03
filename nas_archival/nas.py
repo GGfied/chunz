@@ -10,7 +10,7 @@ from functools import partial
 
 
 def install(package):
-    subprocess.call([sys.executable, "-m", "pip", "install", package])
+    subprocess.call([sys.executable, "-m", "pip", "install", "--user", package])
 
 
 if __name__ == '__main__':

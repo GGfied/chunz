@@ -68,4 +68,4 @@ def parse_fetch_image(url, idx, filename_prefix, directory):
 
 def parse_is_invalid_content(page_content, status_code):
     return status_code != 200 or page_content is None or len(page_content) < 10 \
-           or re.search(r'<title>File Not Found</title>', str(page_content)) is not None
+           or re.search(r'<title>File Not Found</title>', str(page_content)) is not None or len(page_content) == 0

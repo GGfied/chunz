@@ -83,13 +83,18 @@ def get_pages(category, year, long_month, page):
     links = tree.xpath('//a[@class="news-event-item-link"]/@href')
     links = list(map(parse_clean_url, links))
     links = list(map(parse_append_hostname, links))
+    num_links = len(links)
+    short_month_lc = long_month[0:3].lower()
+
+    # invalid page
+    if num_links > 0 and short_month_lc not in links[0].lower():
+        return None
 
     datetimes = tree.xpath('//span[@class="type-body-2"]/text()')
     datetimes = list(map(parse_extract_datetime, datetimes))
     datetimes = list(map(parse_filename, datetimes))
-
-    num_links = len(links)
     num_dt = len(datetimes)
+
     i = 0
     pages = []
 
