@@ -6,7 +6,7 @@ from shared import docxtopdf
 from shared.constants import *
 from shared.docx_body_table import docx_build_body
 from shared.docx_helpers import docx_add_bold, docx_add_underline, docx_apply_hyperlink_style, \
-    docx_add_italic, docx_add_picture, docx_get_type_from_filename, docx_get_others_text
+    docx_add_italic, docx_add_picture, docx_get_others_text
 from shared.globals import GLOBALS
 from shared.parse_helpers import parse_fetch_image
 
@@ -79,13 +79,15 @@ https://www.mindef.gov.sg/web/wcm/connect/mindef/mindef-content/home?siteAreaNam
 """
 
 
-def docx_build(save_filename, filename_prefix, directory, title, datetime_str, images, body,
-               others_text=[], others_link=[]):
+def docx_build(save_filename, filename_prefix, directory,
+               title, datetime_str, images, body, article_type,
+               others_text=[], others_link=[], others_type=[]):
     print('Building DOCX: {}, {}'.format(save_filename, title))
     doc = Document()
     docx_init_styles(doc.styles)
 
-    doc.add_picture(GLOBALS[GLOBAL_LOGO_FILENAME], width=DEFAULT_IMAGE_WIDTH)
+    logo_at_top = GLOBALS[GLOBAL_SPEECH_LOGO_FILENAME] if SPEECHES_TYPE == article_type else GLOBALS[GLOBAL_LOGO_FILENAME]
+    doc.add_picture(logo_at_top, width=DEFAULT_IMAGE_WIDTH)
     doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.LEFT
 
     doc.add_paragraph(title, style=TITLE_STYLE)
@@ -115,20 +117,18 @@ def docx_build(save_filename, filename_prefix, directory, title, datetime_str, i
 
     if num_overall > 0:
         type_map = dict()
-
-        for ol in others_link:
-            ol_type = docx_get_type_from_filename(ol)
-            if ol_type:
-                type_map[ol_type] = type_map[ol_type] + 1 if ol_type in type_map else 1
+        for i in range(num_overall):
+            ol_type = others_type[i]
+            type_map[ol_type] = type_map[ol_type] + 1 if ol_type in type_map else 1
 
         if len(type_map.keys()) > 1:
             others_title = MORE_RESOURCES_TITLE
-        elif NEWS_RELEASES_PREFIX in type_map:
-            others_title = NEWS_RELEASE_TITLE if type_map[NEWS_RELEASES_PREFIX] == 1 else NEWS_RELEASES_TITLE
-        elif SPEECHES_PREFIX in type_map:
-            others_title = SPEECH_TITLE if type_map[SPEECHES_PREFIX] == 1 else SPEECHES_TITLE
-        elif OTHERS_PREFIX in type_map:
-            others_title = FACT_SHEET_TITLE if type_map[OTHERS_PREFIX] == 1 else FACT_SHEETS_TITLE
+        elif NEWS_RELEASES_TYPE in type_map:
+            others_title = NEWS_RELEASE_TITLE if type_map[NEWS_RELEASES_TYPE] == 1 else NEWS_RELEASES_TITLE
+        elif SPEECHES_TYPE in type_map:
+            others_title = SPEECH_TITLE if type_map[SPEECHES_TYPE] == 1 else SPEECHES_TITLE
+        elif OTHERS_TYPE in type_map:
+            others_title = FACT_SHEET_TITLE if type_map[OTHERS_TYPE] == 1 else FACT_SHEETS_TITLE
         else:
             others_title = MORE_RESOURCES_TITLE
 

@@ -21,12 +21,6 @@ def docx_get_filename_prefix(filename, related_count=None):
     return 'MINDEF_{}_{}'.format(filename, related_count) if related_count else 'MINDEF_{}'.format(filename)
 
 
-def docx_get_type_from_filename(filename):
-    res = re.search(r'MINDEF.*\d{8}(\d{3})', filename)
-
-    return res.group(1) if res else None
-
-
 def docx_get_save_filename(filename_prefix, ext=EXT_DOCX):
     return '{}{}'.format(filename_prefix, ext)
 

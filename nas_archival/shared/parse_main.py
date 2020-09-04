@@ -34,7 +34,7 @@ def parse_article(url, filename='', directory='', visited_map=dict(),
         print('-------------------------')
         write_error(directory, error='Invalid URL: {}'.format(url), exception=ex)
 
-        return ERROR
+        return [ERROR, ERROR]
 
     tree = html.fromstring(page_content)
 
@@ -49,7 +49,7 @@ def parse_article(url, filename='', directory='', visited_map=dict(),
     if article_type not in ARTICLE_TYPES_MAP.keys():
         write_error(directory, error='Not Supported Article Type: {}, URL: {}'.format(article_type, url))
 
-        return NOT_SUPPORTED
+        return [NOT_SUPPORTED, NOT_SUPPORTED]
 
     datetime_str = parse_get_datetimestr(tree)
 
@@ -58,6 +58,7 @@ def parse_article(url, filename='', directory='', visited_map=dict(),
     images = parse_extract_img_link_caption(images)
 
     body = tree.xpath('//div[@class="row"]//div[@class="article"]')[0]
+    others_type = []
 
     if is_follow_related_links:
         others_text = tree.xpath('//div[@class="more-resources"]/div[@class="more-resources__links"]/p/a')
@@ -89,14 +90,18 @@ def parse_article(url, filename='', directory='', visited_map=dict(),
     save_filename = docx_get_save_filename(filename_prefix, ext=EXT_DOCX)
     write_debug(directory, msg='Save Filename: {}'.format(save_filename))
     save_filename_no_ext = re.sub(EXT_DOCX + '$', '', save_filename)
-    visited_map[url] = save_filename_no_ext
+    visited_map[url] = [save_filename_no_ext, article_type]
 
     for i in range(len(others_link)):
-        others_link[i] = parse_article(url=others_link[i], filename=filename, directory=directory,
-                                       visited_map=visited_map,
-                                       is_follow_related_links=is_follow_related_links, related_count=i+1)
+        results = parse_article(url=others_link[i], filename=filename, directory=directory,
+                                visited_map=visited_map, is_follow_related_links=is_follow_related_links,
+                                related_count=i+1)
+        others_link[i] = results[0]
+        others_type.append(results[1])
 
-    docx_build(save_filename, filename_prefix, directory, title, datetime_str, images, body,
-               others_text=others_text, others_link=others_link)
+    docx_build(save_filename, filename_prefix, directory,
+               title, datetime_str, images, body, article_type,
+               others_text=others_text, others_link=others_link, others_type=others_type)
 
-    return save_filename_no_ext
+    # returns save filename and article type
+    return [save_filename_no_ext, article_type]

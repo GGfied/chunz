@@ -27,7 +27,7 @@ from lxml import html
 from shared import docxtopdf
 from shared.constants import FILE_DIR, URL_PARAM_CATEGORY, GLOBAL_LOGO_FILENAME, GLOBAL_LOGO_PATH, PARSE_PAGE_CATEGORY, \
     PARSE_PAGE_YEAR, PARSE_PAGE_FILENAME, PARSE_PAGE_MONTH, PARSE_PAGE_LINK, \
-    GLOBAL_SAVE_PDF_COUNTER, CPUS_TO_USE
+    GLOBAL_SAVE_PDF_COUNTER, CPUS_TO_USE, GLOBAL_SPEECH_LOGO_FILENAME, GLOBAL_SPEECH_LOGO_PATH
 
 sys.path.append(FILE_DIR)
 
@@ -218,8 +218,9 @@ def docx_test():
     docxtopdf.convert_to('debug', 'debug/test.docx')
 
 
-def load_logo():
+def load_logos():
     GLOBALS[GLOBAL_LOGO_FILENAME] = GLOBAL_LOGO_PATH
+    GLOBALS[GLOBAL_SPEECH_LOGO_FILENAME] = GLOBAL_SPEECH_LOGO_PATH
 
 
 def get_debug_dir():
@@ -251,7 +252,7 @@ def parse_page(page, is_follow_related_links=True, debug=False):
 
 
 def listbyyear(category, year, is_follow_related_links=True, debug=False):
-    load_logo()
+    load_logos()
     year_pages = get_year_pages(category, year)
     mp_lock = mp.Value('i', 0)
 
@@ -272,7 +273,7 @@ def parse_pages(urls=[], directory='', is_follow_related_links=True, debug=False
         p.close()
         p.join()
 
-    load_logo()
+    load_logos()
     mp_lock = mp.Value('i', 0)
 
     with mp.Pool(processes=CPUS_TO_USE, initializer=init_shared, initargs=(mp_lock,)) as p:
@@ -302,21 +303,21 @@ def main():
     is_follow_related_links = not ('follow-related-links' in args and not args['follow-related-links'])
 
     if args['year'] is not None and args['category'] is not None:
-        load_logo()
+        load_logos()
         listbyyear(category=args['category'], year=args['year'])
     elif args['url'] is not None:
-        load_logo()
+        load_logos()
         debug_directory = get_debug_dir()
         init_shared(mp.Value('i', 0))
         parse_pages(urls=[args['url']], is_follow_related_links=is_follow_related_links, debug=False)
     elif args['urls'] is not None:
-        load_logo()
+        load_logos()
         debug_directory = get_debug_dir()
         urls = args['urls'].split(',')
         init_shared(mp.Value('i', 0))
         parse_pages(urls=urls, is_follow_related_links=is_follow_related_links, debug=False)
     elif args['debug'] is not None:
-        load_logo()
+        load_logos()
         debug_directory = get_debug_dir()
         docx_test()
     else:
