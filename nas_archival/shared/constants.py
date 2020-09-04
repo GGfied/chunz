@@ -126,7 +126,6 @@ PARSE_PAGE_FILENAME = 'filename'
 PARSE_PAGE_CATEGORY = 'category'
 PARSE_PAGE_MONTH = 'month'
 PARSE_PAGE_YEAR = 'year'
-PARSE_PAGE_DUP_PREFIX = 'dup_prefix'
 
 EXT_DOCX = '.docx'
 EXT_PDF = '.pdf'

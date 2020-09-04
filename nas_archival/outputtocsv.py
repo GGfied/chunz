@@ -33,7 +33,7 @@ def merge_details_files(root_dir):
     output = []
 
     for r, d, f in os.walk(root_dir):
-        details_files = list(filter(lambda v: v == 'details.txt', f))
+        details_files = list(filter(lambda v: v == 'debug.txt', f))
 
         for df in details_files:
             full_df = os.path.join(r, df)

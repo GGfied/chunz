@@ -4,15 +4,15 @@ import re
 import requests
 from lxml import html, etree
 from shared.constants import ARTICLE_TYPES_MAP, EXT_DOCX, ERROR, MISSING_TYPE, NOT_SUPPORTED, DEFAULT_TIMEOUT_SECS
-from shared.docx_helpers import docx_get_filename_prefix, docx_get_save_filename, docx_get_dup_prefix
+from shared.docx_helpers import docx_get_filename_prefix, docx_get_save_filename
 from shared.docx_main import docx_build
 from shared.parse_helpers import parse_append_hostname, parse_clean_url, parse_cleanup, parse_extract_img_link_caption, \
     parse_filename, parse_is_invalid_content, parse_get_datetimestr
 from shared.writers import write_debug, write_details, write_error
 
 
-def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dict(), filename_to_dupcount_map=dict(),
-                  is_follow_related_links=True, debug=False):
+def parse_article(url, filename='', directory='', visited_map=dict(),
+                  is_follow_related_links=True, debug=False, related_count=None):
     if url in visited_map:
         return visited_map[url]
 
@@ -71,11 +71,9 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
         others_text = []
         others_link = []
 
-    article_type_prefix = ARTICLE_TYPES_MAP[article_type]
-
     write_debug(directory, msg='URL: {}'.format(url))
     write_debug(directory, msg='Title: {}'.format(title))
-    write_debug(directory, msg='Article Type: {}, {}'.format(article_type, article_type_prefix))
+    write_debug(directory, msg='Article Type: {}'.format(article_type))
     write_debug(directory, msg='DateTime: {}'.format(datetime_str))
     write_debug(directory, msg='Images: {}'.format(images))
     write_debug(directory, msg='Body: {}'.format(etree.tostring(body)))
@@ -85,14 +83,8 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
     if not filename:
         filename = parse_filename(datetime_str)
     write_debug(directory, msg='Filename: {}'.format(filename))
-    filename_prefix = docx_get_filename_prefix(filename, article_type_prefix, dup_prefix=dup_prefix)
-    write_debug(directory, msg='Filename Prefix: {}'.format(filename))
-    if filename_prefix in filename_to_dupcount_map:
-        dup_count = filename_to_dupcount_map[filename_prefix]
-        filename_to_dupcount_map[filename_prefix] += 1
-        filename_prefix = '{}{}'.format(filename_prefix, docx_get_dup_prefix(dup_count))
-    else:
-        filename_to_dupcount_map[filename_prefix] = 1
+    filename_prefix = docx_get_filename_prefix(filename, related_count=related_count)
+    write_debug(directory, msg='Filename Prefix: {}'.format(filename_prefix))
 
     save_filename = docx_get_save_filename(filename_prefix, ext=EXT_DOCX)
     write_debug(directory, msg='Save Filename: {}'.format(save_filename))
@@ -100,9 +92,9 @@ def parse_article(url, filename='', dup_prefix='', directory='', visited_map=dic
     visited_map[url] = save_filename_no_ext
 
     for i in range(len(others_link)):
-        others_link[i] = parse_article(url=others_link[i], directory=directory, visited_map=visited_map,
-                                       dup_prefix=dup_prefix, filename_to_dupcount_map=filename_to_dupcount_map,
-                                       is_follow_related_links=is_follow_related_links)
+        others_link[i] = parse_article(url=others_link[i], filename=filename, directory=directory,
+                                       visited_map=visited_map,
+                                       is_follow_related_links=is_follow_related_links, related_count=i+1)
 
     docx_build(save_filename, filename_prefix, directory, title, datetime_str, images, body,
                others_text=others_text, others_link=others_link)

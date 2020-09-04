@@ -26,7 +26,7 @@ from lxml import html
 
 from shared import docxtopdf
 from shared.constants import FILE_DIR, URL_PARAM_CATEGORY, GLOBAL_LOGO_FILENAME, GLOBAL_LOGO_PATH, PARSE_PAGE_CATEGORY, \
-    PARSE_PAGE_YEAR, PARSE_PAGE_DUP_PREFIX, PARSE_PAGE_FILENAME, PARSE_PAGE_MONTH, PARSE_PAGE_LINK, \
+    PARSE_PAGE_YEAR, PARSE_PAGE_FILENAME, PARSE_PAGE_MONTH, PARSE_PAGE_LINK, \
     GLOBAL_SAVE_PDF_COUNTER, CPUS_TO_USE
 
 sys.path.append(FILE_DIR)
@@ -226,12 +226,17 @@ def get_debug_dir():
     return os.path.join(FILE_DIR, 'debug')
 
 
+def init_shared(args):
+    GLOBALS[GLOBAL_SAVE_PDF_COUNTER] = args
+
+
 def parse_page(page, is_follow_related_links=True, debug=False):
     if PARSE_PAGE_CATEGORY not in page and PARSE_PAGE_YEAR not in page and PARSE_PAGE_MONTH not in page:
         return
 
-    directory = os.path.join(FILE_DIR, page[PARSE_PAGE_CATEGORY], str(page[PARSE_PAGE_YEAR]), page[PARSE_PAGE_MONTH],
-                             page[PARSE_PAGE_FILENAME] + page[PARSE_PAGE_DUP_PREFIX])
+    filename = page[PARSE_PAGE_FILENAME]
+    directory = os.path.join(FILE_DIR, page[PARSE_PAGE_CATEGORY], str(page[PARSE_PAGE_YEAR]),
+                             page[PARSE_PAGE_MONTH], filename)
 
     if os.path.exists(directory):
         shutil.rmtree(directory)
@@ -239,15 +244,10 @@ def parse_page(page, is_follow_related_links=True, debug=False):
     os.makedirs(directory)
 
     try:
-        parse_article(url=page[PARSE_PAGE_LINK],
-                      filename=page[PARSE_PAGE_FILENAME], dup_prefix=page[PARSE_PAGE_DUP_PREFIX],
-                      directory=directory, is_follow_related_links=is_follow_related_links, debug=debug)
+        parse_article(url=page[PARSE_PAGE_LINK], filename=filename, directory=directory,
+                      is_follow_related_links=is_follow_related_links, debug=debug)
     except Exception:
         write_error(directory=directory, error='Exception', exception=traceback.format_exc())
-
-
-def init_shared(args):
-    GLOBALS[GLOBAL_SAVE_PDF_COUNTER] = args
 
 
 def listbyyear(category, year, is_follow_related_links=True, debug=False):
@@ -267,7 +267,7 @@ def listbyyear(category, year, is_follow_related_links=True, debug=False):
 def parse_pages(urls=[], directory='', is_follow_related_links=True, debug=False):
     with mp.Pool(processes=CPUS_TO_USE) as p:
         pages = []
-        res = p.map_async(partial(get_page, directory=directory, dup_map=dict()), urls, callback=pages.extend)
+        res = p.map_async(partial(get_page, directory=directory, nr_count_map=dict()), urls, callback=pages.extend)
         res.wait()
         p.close()
         p.join()

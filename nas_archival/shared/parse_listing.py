@@ -5,25 +5,23 @@ import re
 import requests
 from lxml import html
 from shared.constants import FILE_DIR, PARSE_PAGE_CATEGORY, PARSE_PAGE_YEAR, PARSE_PAGE_FILENAME, PARSE_PAGE_LINK, \
-    PARSE_PAGE_DUP_PREFIX, PARSE_PAGE_MONTH, MONTHS, ERROR, DEFAULT_TIMEOUT_SECS
-from shared.docx_helpers import docx_get_dup_prefix
+    PARSE_PAGE_MONTH, MONTHS, ERROR, DEFAULT_TIMEOUT_SECS
 from shared.parse_helpers import parse_clean_url, parse_append_hostname, parse_extract_datetime, parse_filename, \
     parse_is_invalid_content, parse_get_datetimestr
 from shared.writers import write_error
 
 
-def get_page_model(link, filename, category, year, month, dup_prefix=''):
+def get_page_model(link, filename, category, year, month):
     return {
         PARSE_PAGE_LINK: link,
         PARSE_PAGE_FILENAME: filename,
         PARSE_PAGE_CATEGORY: category,
         PARSE_PAGE_YEAR: year,
         PARSE_PAGE_MONTH: month,
-        PARSE_PAGE_DUP_PREFIX: dup_prefix,
     }
 
 
-def get_page(link, directory='', dup_map=dict()):
+def get_page(link, directory='', nr_count_map=dict()):
     print('Info Processing: {}'.format(link))
     res = re.search(r'/(\d{4})/([^/]+?)/', link)
 
@@ -49,15 +47,12 @@ def get_page(link, directory='', dup_map=dict()):
 
     datetime_str = parse_get_datetimestr(tree)
     filename = parse_filename(datetime_str)
-    dup_prefix = ''
+    # get nr count subfix based on duplicates if 1st is 001, 2nd 002, 3rd 003, ...
+    nr_count_map[filename] = nr_count_map[filename] + 1 if filename in nr_count_map else 1
+    nr_count_subfix = nr_count_map[filename]
+    filename = '{}00{}'.format(filename, nr_count_subfix)
 
-    if filename not in dup_map:
-        dup_map[filename] = 0
-    else:
-        dup_map[filename] = dup_map[filename] + 1
-        dup_prefix = docx_get_dup_prefix(dup_map[filename])
-
-    return get_page_model(link, filename, category='manual', year=year, month=long_month, dup_prefix=dup_prefix)
+    return get_page_model(link, filename, category='manual', year=year, month=long_month)
 
 
 def get_pages(category, year, long_month, page):
@@ -135,14 +130,14 @@ def get_year_pages(category, year):
             year_pages = year_pages + month_pages_res.get()
 
     year_pages.sort(key=lambda y: int(y[PARSE_PAGE_FILENAME]))
-    dup_map = dict()
+    nr_count_map = dict()
     for i in range(len(year_pages)):
         filename = year_pages[i][PARSE_PAGE_FILENAME]
-        dup_map[filename] = dup_map[filename] + 1 if filename in dup_map else 1
-        dup_count = dup_map[filename]
-        year_pages[i][PARSE_PAGE_DUP_PREFIX] = '' if dup_count == 1 else docx_get_dup_prefix(dup_count)
-        if dup_count == 2:
-            year_pages[i - 1][PARSE_PAGE_DUP_PREFIX] = docx_get_dup_prefix(1)
+        # get nr count subfix based on duplicates if 1st is 001, 2nd 002, 3rd 003, ...
+        nr_count_map[filename] = nr_count_map[filename] + 1 if filename in nr_count_map else 1
+        nr_count_subfix = nr_count_map[filename]
+        filename = '{}00{}'.format(filename, nr_count_subfix)
+        year_pages[i][PARSE_PAGE_FILENAME] = filename
 
     with open(os.path.join(FILE_DIR, category, str(year), 'debug-listofpages.txt'), 'w') as f:
         f.write('\r\n'.join(list(map(str, year_pages))))

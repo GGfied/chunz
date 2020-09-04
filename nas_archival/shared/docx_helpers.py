@@ -17,12 +17,8 @@ from shared.globals import GLOBALS
 from shared.writers import write_error
 
 
-def docx_get_dup_prefix(dup_count):
-    return '_{}'.format(dup_count)
-
-
-def docx_get_filename_prefix(filename, article_type_prefix, dup_prefix=''):
-    return 'MINDEF_{}{}{}'.format(filename, article_type_prefix, dup_prefix)
+def docx_get_filename_prefix(filename, related_count=None):
+    return 'MINDEF_{}_{}'.format(filename, related_count) if related_count else 'MINDEF_{}'.format(filename)
 
 
 def docx_get_type_from_filename(filename):
