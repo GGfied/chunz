@@ -10,9 +10,10 @@ from shared.constants import FILE_DIR
 
 
 def convert_to(folder, source, timeout=None):
-    args = [libreoffice_exec(), '-env:UserInstallation=file://{}'.format(FILE_DIR), '--headless', '--convert-to',
+    # args = [libreoffice_exec(), '-env:UserInstallation=file://{}'.format(FILE_DIR), '--headless', '--convert-to',
+    #         'pdf:writer_pdf_Export', '--outdir', folder, source]
+    args = [libreoffice_exec(), '--headless', '--convert-to',
             'pdf:writer_pdf_Export', '--outdir', folder, source]
-
     process = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=timeout)
 
 
