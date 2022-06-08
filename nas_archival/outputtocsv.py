@@ -38,7 +38,7 @@ def merge_details_files(root_dir):
         for df in details_files:
             full_df = os.path.join(r, df)
 
-            with open(full_df, 'r') as f:
+            with open(full_df, 'r', encoding='utf-8', errors='ignore') as f:
                 output.append('{}: {}'.format(START_HEADER, full_df))
                 output = output + f.readlines()
 
@@ -123,11 +123,11 @@ def jsontocsvstr(json, ignore_fields=[]):
 
 
 def write_to_csv(filename='', transformed_output=[]):
-    with open(filename, 'w') as wf:
+    with open(filename, 'w', encoding='utf-8') as wf:
         wf.write(','.join(list(map(lambda v: "\"{}\"".format(v), DISPLAY_HEADERS))))
         sorted_list = sorted(transformed_output, key=lambda v: int(v['Filename']) if 'Filename' in v else -1)
         csvstr_list = list(map(jsontocsvstr, sorted_list))
-        wf.write('\r\n'.join(csvstr_list))
+        wf.write('\n'.join(csvstr_list))
 
 
 def main(root_dir, output_csv='outputtocsv_results.csv'):

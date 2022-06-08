@@ -142,7 +142,7 @@ def get_year_pages(category, year, month_idx=None):
         filename = '{}00{}'.format(filename, nr_count_subfix)
         year_pages[i][PARSE_PAGE_FILENAME] = filename
 
-    with open(os.path.join(FILE_DIR, category, str(year), 'debug-listofpages.txt'), 'w') as f:
+    with open(os.path.join(FILE_DIR, category, str(year), 'debug-listofpages.txt'), 'w', encoding='utf-8') as f:
         f.write('\r\n'.join(list(map(str, year_pages))))
 
     return year_pages

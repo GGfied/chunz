@@ -6,7 +6,7 @@ from shared.constants import FILE_DIR
 def write_error(directory=FILE_DIR, error='', exception=None, filename='error.txt'):
     errormsg = '{}{}\r\n'.format(error, '' if exception is None else '_' + str(exception))
 
-    with open(os.path.join(directory, filename), 'a') as f:
+    with open(os.path.join(directory, filename), 'a', encoding='utf-8') as f:
         print(errormsg)
         f.write(errormsg)
 
@@ -14,11 +14,11 @@ def write_error(directory=FILE_DIR, error='', exception=None, filename='error.tx
 def write_debug(directory=FILE_DIR, msg='', exception=None, filename='debug.txt'):
     debugmsg = '{}{}\r\n'.format(msg, '' if exception is None else '_' + str(exception))
 
-    with open(os.path.join(directory, filename), 'a') as f:
+    with open(os.path.join(directory, filename), 'a', encoding='utf-8', errors='ignore') as f:
         f.write(debugmsg)
 
 
 def write_details(directory=FILE_DIR, title='', url='', filename='details.txt'):
-    with open(os.path.join(directory, filename), 'a') as f:
+    with open(os.path.join(directory, filename), 'a', encoding='utf-8') as f:
         f.write(title + '\r\n')
         f.write(url + '\r\n')

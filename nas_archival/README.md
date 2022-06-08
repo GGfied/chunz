@@ -30,7 +30,7 @@ OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES python3 nas.py --year <year> --category 
 #### Script Parameters
 **year** - *Year of pages*
 
-**month** - *Month of pages*
+*(optional)* **month** - *Month of pages in numeric e.g. 1 for January and 12 for December*
 
 **category** - *Category of pages*
 
