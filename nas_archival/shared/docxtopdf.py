@@ -20,6 +20,8 @@ def libreoffice_exec():
     # TODO: Provide support for more platforms
     if sys.platform == 'darwin':
         return '/Applications/LibreOffice.app/Contents/MacOS/soffice'
+    elif sys.platform == 'win32':
+        return 'C:\\Program Files\\LibreOffice\\program\\soffice.com'
     return 'libreoffice'
 
 

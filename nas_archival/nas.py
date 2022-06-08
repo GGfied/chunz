@@ -229,6 +229,7 @@ def get_debug_dir():
 
 def init_shared(args):
     GLOBALS[GLOBAL_SAVE_PDF_COUNTER] = args
+    load_logos()
 
 
 def parse_page(page, is_follow_related_links=True, debug=False):
@@ -251,9 +252,9 @@ def parse_page(page, is_follow_related_links=True, debug=False):
         write_error(directory=directory, error='Exception', exception=traceback.format_exc())
 
 
-def listbyyear(category, year, is_follow_related_links=True, debug=False):
+def listbyyear(category, year, is_follow_related_links=True, debug=False, month_idx=None):
     load_logos()
-    year_pages = get_year_pages(category, year)
+    year_pages = get_year_pages(category, year, month_idx)
     mp_lock = mp.Value('i', 0)
 
     with mp.Pool(processes=CPUS_TO_USE, initializer=init_shared, initargs=(mp_lock,)) as p:
@@ -298,13 +299,16 @@ def main():
     parser.add_argument('--follow-related-links', dest='follow-related-links',
                         help='(optional) Follow Related Links?')
     parser.add_argument('--debug', dest='debug')
+    parser.add_argument('--month', dest='month', type=int,
+                        help='numeric month of <category> articles')
     args = vars(parser.parse_args())
 
     is_follow_related_links = not ('follow-related-links' in args and not args['follow-related-links'])
 
     if args['year'] is not None and args['category'] is not None:
         load_logos()
-        listbyyear(category=args['category'], year=args['year'])
+        month_idx = args['month'] - 1 if args['month'] else None
+        listbyyear(category=args['category'], year=args['year'], month_idx=month_idx)
     elif args['url'] is not None:
         load_logos()
         debug_directory = get_debug_dir()

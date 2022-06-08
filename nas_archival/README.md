@@ -30,9 +30,11 @@ OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES python3 nas.py --year <year> --category 
 #### Script Parameters
 **year** - *Year of pages*
 
+**month** - *Month of pages*
+
 **category** - *Category of pages*
 
-*VALID CATEGORIES - news-releases, speeches, others*
+*VALID CATEGORIES - news-releases, speeches, others, replies-to-media-query*
 
 *(optional default is True)* **follow-related-links** - *Generate for related resources?*
 

@@ -120,10 +120,13 @@ def get_month_pages(category, year, long_month):
     return month_pages
 
 
-def get_year_pages(category, year):
+def get_year_pages(category, year, month_idx=None):
     year_pages = []
     with mp.Pool(processes=4) as p:
-        res = [p.apply_async(get_month_pages, args=(category, year, month_str)) for month_str in MONTHS]
+        if month_idx is None or month_idx < 0 or month_idx > 11:
+            res = [p.apply_async(get_month_pages, args=(category, year, month_str)) for month_str in MONTHS]
+        else:
+            res = [p.apply_async(get_month_pages, args=(category, year, MONTHS[month_idx]))]
         p.close()
         p.join()
         for month_pages_res in res:
