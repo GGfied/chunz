@@ -15,7 +15,7 @@ ERROR_FILENAME = 'outputtocsv_errors.txt'
 
 HEADERS = [SAVE_PATH, 'Article Type', 'URL', 'Title', 'DateTime', 'Body', 'Images', 'Others Text', 'Others Link',
            'Filename', 'Filename Prefix', 'Save Filename', RELATED]
-OUTPUT_HEADERS = ['Save Path', 'Article Type', 'URL', 'Title', 'DateTime', 'Filename', 'Filename Prefix',
+OUTPUT_HEADERS = ['Save Path', 'Article Type', 'URL', 'Title', 'DateTime', 'Filename Prefix', 'Filename',
                   'Save Filename', RELATED]
 DISPLAY_HEADERS = OUTPUT_HEADERS[:-1] \
                   + list(map(lambda v: '{} 1 {}'.format(RELATED, v), OUTPUT_HEADERS[1:-1])) \

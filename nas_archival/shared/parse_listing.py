@@ -50,12 +50,12 @@ def get_page(link, directory='', nr_count_map=dict()):
     # get nr count subfix based on duplicates if 1st is 001, 2nd 002, 3rd 003, ...
     nr_count_map[filename] = nr_count_map[filename] + 1 if filename in nr_count_map else 1
     nr_count_subfix = nr_count_map[filename]
-    filename = '{}00{}'.format(filename, nr_count_subfix)
+    filename = '{}{}'.format(filename, str(nr_count_subfix).zfill(3))
 
     return get_page_model(link, filename, category='manual', year=year, month=long_month)
 
 
-def get_pages(category, year, long_month, page):
+def get_pages(category, year, long_month, page, visited_link_map):
     url = 'https://www.mindef.gov.sg/web/wcm/connect/mindef/mindef-content/home'
     params = {
         'siteAreaName': 'mindef-content/home/news-and-events/latest-releases/{}/{}'.format(year, long_month),
@@ -78,6 +78,7 @@ def get_pages(category, year, long_month, page):
     links = tree.xpath('//a[@class="news-event-item-link"]/@href')
     links = list(map(parse_clean_url, links))
     links = list(map(parse_append_hostname, links))
+    links.reverse()
     num_links = len(links)
     short_month_lc = long_month[0:3].lower()
 
@@ -88,14 +89,18 @@ def get_pages(category, year, long_month, page):
     datetimes = tree.xpath('//span[@class="type-body-2"]/text()')
     datetimes = list(map(parse_extract_datetime, datetimes))
     datetimes = list(map(parse_filename, datetimes))
+    datetimes.reverse()
     num_dt = len(datetimes)
 
     i = 0
     pages = []
 
     while i < num_links and i < num_dt:
-        pages.append(get_page_model(link=links[i], filename=datetimes[i], category=category,
-                                    year=year, month=long_month))
+        # skip duplicated links
+        if links[i] not in visited_link_map:
+            pages.append(get_page_model(link=links[i], filename=datetimes[i], category=category,
+                                        year=year, month=long_month))
+        visited_link_map[links[i]] = True
         i += 1
 
     return pages
@@ -109,12 +114,13 @@ def get_month_pages(category, year, long_month):
         os.makedirs(directory)
 
     month_pages = []
+    visited_link_map = dict()
 
     for page_num in range(1, 100000):
-        pages = get_pages(category, year, long_month, page_num)
+        pages = get_pages(category, year, long_month, page_num, visited_link_map)
         if pages is None:
             break
-        month_pages = month_pages + pages
+        month_pages = pages + month_pages
 
     print('Retrieved {} Articles from'.format(len(month_pages)), long_month, year)
     return month_pages
@@ -139,7 +145,7 @@ def get_year_pages(category, year, month_idx=None):
         # get nr count subfix based on duplicates if 1st is 001, 2nd 002, 3rd 003, ...
         nr_count_map[filename] = nr_count_map[filename] + 1 if filename in nr_count_map else 1
         nr_count_subfix = nr_count_map[filename]
-        filename = '{}00{}'.format(filename, nr_count_subfix)
+        filename = '{}{}'.format(filename, str(nr_count_subfix).zfill(3))
         year_pages[i][PARSE_PAGE_FILENAME] = filename
 
     with open(os.path.join(FILE_DIR, category, str(year), 'debug-listofpages.txt'), 'w', encoding='utf-8') as f:

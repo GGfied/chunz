@@ -75,7 +75,7 @@ def parse_article(url, filename='', directory='', visited_map=dict(),
     write_debug(directory, msg='URL: {}'.format(url))
     write_debug(directory, msg='Title: {}'.format(title))
     write_debug(directory, msg='Article Type: {}'.format(article_type))
-    write_debug(directory, msg='DateTime: {}'.format(datetime_str))
+    write_debug(directory, msg='DateTime: {}'.format(datetime_str.replace(' ', '-')))
     write_debug(directory, msg='Images: {}'.format(images))
     write_debug(directory, msg='Body: {}'.format(etree.tostring(body)))
     write_debug(directory, msg='Others Text: {}'.format(others_text))
