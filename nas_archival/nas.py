@@ -18,13 +18,15 @@ if __name__ == '__main__':
     install('python-docx')
     install('requests')
     install('Pillow')
+    install('docx2pdf')
 
 os.environ['OBJC_DISABLE_INITIALIZE_FORK_SAFETY'] = 'YES'
 
 from docx import Document
 from lxml import html
 
-from shared import docxtopdf
+# from shared import docxtopdf
+from docx2pdf import convert
 from shared.constants import FILE_DIR, URL_PARAM_CATEGORY, GLOBAL_LOGO_FILENAME, GLOBAL_LOGO_PATH, PARSE_PAGE_CATEGORY, \
     PARSE_PAGE_YEAR, PARSE_PAGE_FILENAME, PARSE_PAGE_MONTH, PARSE_PAGE_LINK, \
     GLOBAL_SAVE_PDF_COUNTER, CPUS_TO_USE, GLOBAL_SPEECH_LOGO_FILENAME, GLOBAL_SPEECH_LOGO_PATH
@@ -215,7 +217,8 @@ def docx_test():
     docx_build_body(body, doc, directory=os.path.join(FILE_DIR, 'debug'), filename_prefix='test')
     doc.add_picture('debug/test.png')
     doc.save('debug/test.docx')
-    docxtopdf.convert_to('debug', 'debug/test.docx')
+    convert(input_path='debug/test.docx', output_path='debug/test.pdf')
+    # docxtopdf.convert_to('debug', 'debug/test.docx')
 
 
 def load_logos():
@@ -330,7 +333,7 @@ def main():
 
 if __name__ == '__main__':
     start = time.time()
-    docxtopdf.setup()
+    # docxtopdf.setup()
     main()
     end = time.time()
     print('Processing Time Taken: {}secs'.format(end - start))

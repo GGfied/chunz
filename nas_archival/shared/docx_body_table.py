@@ -89,7 +89,7 @@ def docx_build_body(body, doc=None,
         child_ele = children[idx]
         tag = child_ele.tag
 
-        if tag is etree.Comment:
+        if tag == etree.Comment:
             write_error(directory, error='NOT HANDLED COMMENT')
             continue
 
@@ -124,7 +124,7 @@ def docx_build_body(body, doc=None,
         # Handle nbsp; before inline child
         if raw_before_text is not None and raw_before_text.endswith(NBSP) \
                 and len(child_ele.getchildren()) > 0 \
-                and child_ele.getchildren()[0].tag is not etree.Comment \
+                and child_ele.getchildren()[0].tag != etree.Comment \
                 and child_ele.getchildren()[0].tag in INLINE_TAGS:
             child_ele.text = re.sub('{}$'.format(NBSP), ' ', raw_before_text)
             raw_before_text = child_ele.text
@@ -197,7 +197,7 @@ def docx_build_body(body, doc=None,
             inline_img_idx = inline_img_idx_obj[INLINE_IMAGE_IDX] if INLINE_IMAGE_IDX in inline_img_idx_obj else 0
             image_filename = parse_fetch_image(url=image_link, idx=docx_get_inline_image_prefix(inline_img_idx),
                                                directory=directory,
-                                               filename_prefix=filename_prefix) if image_link is not '' else ''
+                                               filename_prefix=filename_prefix) if image_link != '' else ''
             inline_img_idx_obj[INLINE_IMAGE_IDX] = inline_img_idx + 1
             docx_add_picture(image_filename, before_run, directory=directory, is_paragraph=False)
         elif tag != A_TAG and before_text != '':
@@ -218,7 +218,7 @@ def docx_build_body(body, doc=None,
             docx_add_heading(before_run)
 
         # Insert Text After Element
-        if after_text is not '' and tag not in REQ_NEW_PARA_TAGS:
+        if after_text != '' and tag not in REQ_NEW_PARA_TAGS:
             if run is None:
                 write_debug(directory=directory, msg='AFTER - NEW RUN')
                 para_to_use.add_run(after_text, style=parent_run_style)
@@ -227,7 +227,7 @@ def docx_build_body(body, doc=None,
                 docx_copy_run(para_to_use, run, text=after_text)
 
         # LIST TAG - Delete Paragraph if no text and only 1 run (this run)
-        if tag in LIST_TAGS and before_run.text is '' and len(para_to_use.runs) == 1:
+        if tag in LIST_TAGS and before_run.text == '' and len(para_to_use.runs) == 1:
             docx_delete_paragraph(para_to_use)
 
         # Only pass run if its not a paragraph tag
@@ -242,10 +242,10 @@ def docx_build_body(body, doc=None,
         next_idx = idx + 1
         is_not_last_child = next_idx < num_children
         next_tag = children[next_idx].tag.lower() if is_not_last_child and children[
-            next_idx].tag is not etree.Comment else ''
+            next_idx].tag != etree.Comment else ''
         is_next_tag_req_new_para = is_not_last_child and next_tag not in REQ_NEW_PARA_TAGS
 
-        if (after_text is not '' or is_next_tag_req_new_para) and tag in REQ_NEW_PARA_TAGS:
+        if (after_text != '' or is_next_tag_req_new_para) and tag in REQ_NEW_PARA_TAGS:
             write_debug(directory=directory, msg='AFTER CHILDREN - COPY PARA & RUN')
             paragraph = docx_copy_paragraph(doc, paragraph, para_style=parent_para_style)
             run = docx_copy_run(paragraph, run, text=after_text, run_style=parent_run_style)

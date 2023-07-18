@@ -175,7 +175,7 @@ def docx_get_coldimensions(tablebody):
             if cell.tag.lower() != TD_TAG and cell.tag.lower() != TH_TAG:
                 continue
 
-            while dimencolidx < len(coldimens[dimenrowidx]) and coldimens[dimenrowidx][dimencolidx] is not '':
+            while dimencolidx < len(coldimens[dimenrowidx]) and coldimens[dimenrowidx][dimencolidx] != '':
                 dimencolidx += 1
 
             colspan = 1
@@ -305,7 +305,7 @@ def docx_copy_run(paragraph, run, text='', run_style=''):
         new_run.text = new_run.text + text
     else:
         new_run = old_run
-        if text is not '':
+        if text != '':
             paragraph.add_run(text, style=run_style)
 
     return new_run
@@ -340,7 +340,7 @@ def docx_add_picture(image_filename, doc_or_run, image_caption='', is_paragraph=
     if is_paragraph:
         doc_or_run.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.LEFT
 
-        if image_caption is not '':
+        if image_caption != '':
             doc_or_run.paragraphs[-1].runs[0].add_break(WD_BREAK.LINE)
             doc_or_run.paragraphs[-1].add_run(DEFAULT_CAPTION_PADDING + image_caption, style=RUN_CAPTION_STYLE)
 

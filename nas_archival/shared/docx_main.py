@@ -2,7 +2,8 @@ from docx import Document
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT as WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
-from shared import docxtopdf
+from docx2pdf import convert
+# from shared import docxtopdf
 from shared.constants import *
 from shared.docx_body_table import docx_build_body
 from shared.docx_helpers import docx_add_bold, docx_add_underline, docx_apply_hyperlink_style, \
@@ -146,7 +147,10 @@ def docx_build(save_filename, filename_prefix, directory,
     doc.save(save_path)
 
     with GLOBALS[GLOBAL_SAVE_PDF_COUNTER].get_lock():
-        print('Saving to PDF: {}, {}'.format(directory, save_path))
-        docxtopdf.convert_to(folder=directory, source=save_path)
+        docx_input_path = save_path
+        pdf_output_path = '{}{}'.format(save_path[:-4], 'pdf')
+        print('Saving to PDF: {} --> {}'.format(docx_input_path, pdf_output_path))
+        convert(input_path=docx_input_path, output_path=pdf_output_path)
+        # docxtopdf.convert_to(folder=directory, source=save_path)
 
     return save_filename
